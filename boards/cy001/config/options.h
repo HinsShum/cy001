@@ -35,6 +35,7 @@ extern "C"
 #include <stdio.h>
 #include "misc.h"
 #include "version.h"
+#include "heap.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_conf.h"
 
@@ -62,6 +63,17 @@ extern "C"
 #define __delay_us(us)                  udelay(us)
 #define __get_ticks()                   tick_get()
 #define MS2TICKS(ms)                    (ms)
+
+/* system critical functions
+ */
+#define __enter_critical()              enter_critical()
+#define __exit_critical()               exit_critical()
+
+/* system heap functions
+ */
+#define __malloc(size)                  port_malloc(size);
+#define __free(ptr)                     port_free(ptr)
+#define __heap_free_size_get()          port_get_free_heap_size()
 
 /* print macros
  */
@@ -109,6 +121,8 @@ extern "C"
 extern void udelay(uint32_t us);
 extern void mdelay(uint32_t delay);
 extern uint64_t tick_get(void);
+extern void enter_critical(void);
+extern void exit_critical(void);
 
 #ifdef __cplusplus
 }

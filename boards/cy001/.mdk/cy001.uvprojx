@@ -337,9 +337,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>STM32F103xE, USE_HAL_DRIVER, USE_FULL_LL_DRIVER, HSE_VALUE=8000000, CONFIG_OPTIONS_FILE=&lt;config/options.h&gt;</Define>
+              <Define>STM32F103xE, USE_HAL_DRIVER, USE_FULL_LL_DRIVER, HSE_VALUE=8000000, CONFIG_OPTIONS_FILE=&lt;config/options.h&gt;, CONFIG_HEAP_PORT_FILE=&lt;config/heap_port.h&gt;</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\arch\stm32f10x\inc;..\bsp\inc;..\cpu\inc;..\;..\..\..\common\inc;..\..\..\driver\include;..\..\..\inc;..\..\..\lib\st\stm32f10x\peripherals\inc;..\..\..\lib\st\stm32f10x\peripherals\inc\Legacy;..\..\..\utils\include</IncludePath>
+              <IncludePath>..\..\..\arch\stm32f10x\inc;..\bsp\inc;..\cpu\inc;..\;..\..\..\common\inc;..\..\..\driver\include;..\..\..\inc;..\..\..\lib\st\stm32f10x\peripherals\inc;..\..\..\lib\st\stm32f10x\peripherals\inc\Legacy;..\..\..\utils\include;..\..\..\components\heap\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -494,7 +494,14 @@
           <GroupName>common</GroupName>
         </Group>
         <Group>
-          <GroupName>components</GroupName>
+          <GroupName>components/heap</GroupName>
+          <Files>
+            <File>
+              <FileName>heap.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\heap\heap.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>driver</GroupName>
@@ -565,5 +572,20 @@
     <components/>
     <files/>
   </RTE>
+
+  <LayerInfo>
+    <Layers>
+      <Layer>
+        <LayName>&lt;Project Info&gt;</LayName>
+        <LayDesc></LayDesc>
+        <LayUrl></LayUrl>
+        <LayKeys></LayKeys>
+        <LayCat></LayCat>
+        <LayLic></LayLic>
+        <LayTarg>0</LayTarg>
+        <LayPrjMark>1</LayPrjMark>
+      </Layer>
+    </Layers>
+  </LayerInfo>
 
 </Project>

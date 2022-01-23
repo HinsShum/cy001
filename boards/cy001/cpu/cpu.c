@@ -42,6 +42,7 @@ extern uint32_t _sisr_vector;
 /*---------- variable ----------*/
 static uint32_t clk_cycle = 0;
 static uint64_t __IO _ticks = 0;
+static uint16_t __suspended = 0;
 
 /*---------- function ----------*/
 static void config_systick(void)
@@ -165,10 +166,32 @@ void tick_increase(void)
 
 uint64_t tick_get(void)
 {
-    return _ticks;
+    uint64_t ticks = 0;
+
+    enter_critical();
+    ticks = _ticks;
+    exit_critical();
+
+    return ticks;
 }
 
 uint32_t HAL_GetTick(void)
 {
-    return (uint32_t)_ticks;
+    return (uint32_t)tick_get();
+}
+
+void enter_critical(void)
+{
+    __disable_irq();
+    __suspended++;
+}
+
+void exit_critical(void)
+{
+    if(__suspended) {
+        __suspended--;
+    }
+    if(!__suspended) {
+        __enable_irq();
+    }
 }

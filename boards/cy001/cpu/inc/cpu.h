@@ -91,6 +91,20 @@ extern void tick_increase(void);
  */
 extern uint64_t tick_get(void);
 
+/**
+ * @brief disable irq
+ * 
+ * @retval None
+ */
+extern void enter_critical(void);
+
+/**
+ * @brief enable irq
+ *
+ * @retval None
+ */
+extern void exit_critical(void);
+
 #ifdef __cplusplus
 }
 #endif
