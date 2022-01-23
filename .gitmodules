@@ -1,0 +1,8 @@
+[submodule "driver"]
+	path = driver
+	url = git@github.com:HinsShum/driver-frame.git
+	branch = main
+[submodule "utils"]
+	path = utils
+	url = git@github.com:HinsShum/utils-frame.git
+	branch = main
