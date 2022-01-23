@@ -1,9 +1,9 @@
 /**
- * @file boards\cy001\src\main.c
+ * @file boards\cy001\resource\inc\resource_pool.h
  *
  * Copyright (C) 2022
  *
- * main.c is free software: you can redistribute it and/or modify
+ * resource_pool.h is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -20,24 +20,28 @@
  *
  * @encoding utf-8
  */
+#ifndef __RESOURCE_POOL_H
+#define __RESOURCE_POOL_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /*---------- includes ----------*/
-#include "cpu.h"
-#include "plat.h"
-#include "options.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 /*---------- macro ----------*/
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-/*---------- variable ----------*/
-/*---------- function ----------*/
-int32_t main(void)
-{
-    cpu_config();
-    plat_init();
-    for(;;) {
-        __delay_ms(1000);
-        printf("Hello, World!\n");
-    }
+extern void resource_pool_init(void);
+extern void resource_pool_deinit(void);
+extern void *resource_pool_get_device(const char *name);
+
+#ifdef __cplusplus
 }
+#endif
+#endif /* __RESOURCE_POOL_H */

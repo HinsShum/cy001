@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F103xE, USE_HAL_DRIVER, USE_FULL_LL_DRIVER, HSE_VALUE=8000000, CONFIG_OPTIONS_FILE=&lt;config/options.h&gt;, CONFIG_HEAP_PORT_FILE=&lt;config/heap_port.h&gt;</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\arch\stm32f10x\inc;..\bsp\inc;..\cpu\inc;..\;..\..\..\common\inc;..\..\..\driver\include;..\..\..\inc;..\..\..\lib\st\stm32f10x\peripherals\inc;..\..\..\lib\st\stm32f10x\peripherals\inc\Legacy;..\..\..\utils\include;..\..\..\components\heap\inc</IncludePath>
+              <IncludePath>..\..\..\arch\stm32f10x\inc;..\bsp\inc;..\cpu\inc;..\;..\..\..\common\inc;..\..\..\driver\include;..\..\..\inc;..\..\..\lib\st\stm32f10x\peripherals\inc;..\..\..\lib\st\stm32f10x\peripherals\inc\Legacy;..\..\..\utils\include;..\..\..\components\heap\inc;..\resource\inc;..\src\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -443,6 +443,21 @@
               <FileType>1</FileType>
               <FilePath>..\src\main.c</FilePath>
             </File>
+            <File>
+              <FileName>plat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\plat.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>resource</GroupName>
+          <Files>
+            <File>
+              <FileName>resource_pool.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\resource\resource_pool.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -492,6 +507,13 @@
         </Group>
         <Group>
           <GroupName>common</GroupName>
+          <Files>
+            <File>
+              <FileName>resource_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\resource_manager.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>components/heap</GroupName>

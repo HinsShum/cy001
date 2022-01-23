@@ -1,9 +1,9 @@
 /**
- * @file boards/cy001/src/fputc.c
+ * @file boards\cy001\src\plat.c
  *
- * Copyright (C) 2021
+ * Copyright (C) 2022
  *
- * fputc.c is free software: you can redistribute it and/or modify
+ * plat.c is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -22,49 +22,18 @@
  */
 
 /*---------- includes ----------*/
-#include "serial.h"
 #include "resource_pool.h"
-#include "options.h"
-#include <stdio.h>
+#include "errorno.h"
 
 /*---------- macro ----------*/
+/*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-/*---------- type define ----------*/
 /*---------- variable ----------*/
-static void *_serial;
-
 /*---------- function ----------*/
-#if defined(__ARMCC_VERSION)
-#if !defined(__MICROLIB)
-#if defined(__CC_ARM)
-struct __FILE {
-   int handle;
-};
-#endif
-FILE __stdout;
-#endif
-int fputc(int ch, FILE *p)
+int32_t plat_init(void)
 {
-    uint8_t c = (uint8_t)ch;
+    resource_pool_init();
 
-    if(_serial == NULL) {
-        _serial = resource_pool_get_device("com");
-    }
-
-    device_write(_serial, &c, SERIAL_WIRTE_CHANGE_DIR_AUTOMATICALLY, sizeof(c));
-
-    return ch;
+    return CY_EOK;
 }
-#else
-int _write(int fd, char *buf, int size)
-{
-    if(_serial == NULL) {
-        _serial = resource_pool_get_device("com");
-    }
-
-    device_write(_serial, (void *)buf, SERIAL_WIRTE_CHANGE_DIR_AUTOMATICALLY, size);
-
-    return size;
-}
-#endif
