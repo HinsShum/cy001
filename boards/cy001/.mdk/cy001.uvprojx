@@ -513,6 +513,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\common\resource_manager.c</FilePath>
             </File>
+            <File>
+              <FileName>soft_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\soft_timer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
