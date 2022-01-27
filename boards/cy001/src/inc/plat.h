@@ -37,7 +37,8 @@ extern "C"
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-extern int32_t plat_init(void);
+extern void plat_init(void);
+extern void plat_deinit(void);
 
 #ifdef __cplusplus
 }

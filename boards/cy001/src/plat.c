@@ -22,6 +22,7 @@
  */
 
 /*---------- includes ----------*/
+#include "plat.h"
 #include "resource_pool.h"
 #include "errorno.h"
 
@@ -31,9 +32,12 @@
 /*---------- function prototype ----------*/
 /*---------- variable ----------*/
 /*---------- function ----------*/
-int32_t plat_init(void)
+void plat_init(void)
 {
     resource_pool_init();
+}
 
-    return CY_EOK;
+void plat_deinit(void)
+{
+    resource_pool_deinit();
 }

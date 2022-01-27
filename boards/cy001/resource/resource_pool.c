@@ -28,55 +28,76 @@
 #include "options.h"
 
 /*---------- macro ----------*/
-#define IMPORT_DEVICE(name)                                             \
+#define IMPORT_DEVICE(name, pool)                                       \
         do {                                                            \
             void *dev = device_open(#name);                             \
             assert(dev);                                                \
             if(dev) {                                                   \
-                __dev->add_resource(__dev, #name, dev);                 \
+                pool->add_resource(pool, #name, dev);                   \
             }                                                           \
-        } while(0)                                                      \
+        } while(0)
+
+#define EXPORT_DEVICE(name, pool)                                       \
+        do {                                                            \
+            void *dev = pool->get_resource(pool, #name);                \
+            assert(dev);                                                \
+            if(dev) {                                                   \
+                device_close(dev);                                      \
+                pool->remove_resource(pool, #name);                     \
+            }                                                           \
+        } while(0)
 
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
 /*---------- variable ----------*/
-static resource_manager_base_t __dev;
+static resource_manager_base_t devices_pool;
 
 /*---------- function ----------*/
 static void _resource_add(void)
 {
     /* import devices */
     driver_search_device();
-    IMPORT_DEVICE(com);
-    IMPORT_DEVICE(flash1);
-    IMPORT_DEVICE(flash2);
-    IMPORT_DEVICE(wdt);
+    IMPORT_DEVICE(com, devices_pool);
+    IMPORT_DEVICE(flash1, devices_pool);
+    IMPORT_DEVICE(flash2, devices_pool);
+    IMPORT_DEVICE(wdt, devices_pool);
+}
+
+static void _resource_remove(void)
+{
+    /* export devices */
+    EXPORT_DEVICE(com, devices_pool);
+    EXPORT_DEVICE(flash1, devices_pool);
+    EXPORT_DEVICE(flash2, devices_pool);
+    EXPORT_DEVICE(wdt, devices_pool);
 }
 
 void resource_pool_init(void)
 {
     /* create resource pool */
-    if(__dev) {
-        resource_manager_destroy(__dev);
+    if(devices_pool) {
+        resource_manager_destroy(devices_pool);
     }
-    __dev = resource_manager_create();
+    devices_pool = resource_manager_create();
     /* add all resource */
     _resource_add();
 }
 
 void resource_pool_deinit(void)
 {
-    resource_manager_destroy(__dev);
-    __dev = NULL;
+    /* remove all resource */
+    _resource_remove();
+    resource_manager_destroy(devices_pool);
+    devices_pool = NULL;
 }
 
 void *resource_pool_get_device(const char *name)
 {
     void *resource = NULL;
 
-    if(__dev) {
-        resource = __dev->get_resource(__dev, name);
+    if(devices_pool) {
+        resource = devices_pool->get_resource(devices_pool, name);
     }
 
     return resource;
