@@ -32,7 +32,7 @@
 /*---------- function prototype ----------*/
 /*---------- variable ----------*/
 /*---------- function ----------*/
-int32_t main(void)
+int main(void)
 {
     cpu_config();
     plat_init();

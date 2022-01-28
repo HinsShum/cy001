@@ -22,7 +22,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_it.h"
 #include "stm32f1xx_ll_conf.h"
-// #include "device.h"
+#include "resource_pool.h"
+#include "device.h"
 
 /** @addtogroup STM32F1xx_LL_Examples
   * @{
@@ -154,10 +155,15 @@ void SysTick_Handler(void)
 void USART1_IRQHandler(void)
 {
 	uint8_t data = 0;
+  static void *com = NULL;
+
+  if(com == NULL) {
+    com = resource_pool_get_device("com");
+  }
 
 	if(RESET != LL_USART_IsActiveFlag_RXNE(USART1)) {
 		data = LL_USART_ReceiveData8(USART1);
-		// device_irq_process(g_plat.dev.com, (uint32_t)USART1_IRQHandler, &data, sizeof(data));
+		device_irq_process(com, (uint32_t)USART1_IRQHandler, &data, sizeof(data));
 	}
 	if(RESET != LL_USART_IsActiveFlag_ORE(USART1)) {
 		LL_USART_ClearFlag_ORE(USART1);
