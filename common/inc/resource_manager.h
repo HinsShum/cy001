@@ -40,6 +40,7 @@ struct resource_manager_base {
     bool (*add_resource)(const resource_manager_base_t base, const char *name, void *ptr);
     bool (*remove_resource)(const resource_manager_base_t base, const char *name);
     void *(*get_resource)(const resource_manager_base_t base, const char *name);
+    void *(*get_resource_careful)(const resource_manager_base_t base, const char *name);
     void (*set_default)(resource_manager_base_t base, void *ptr);
 };
 

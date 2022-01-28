@@ -61,7 +61,6 @@ static bool _search_node(const resource_manager_t manager, const char *name, res
         if(__match_by_name(p->name, name)) {
             *node = *p;
             retval = true;
-            __debug_message("Search (%s) node at 0x%p\n", name, p);
         }
     }
 
@@ -149,6 +148,26 @@ static void *_get_resource(const resource_manager_base_t base, const char *name)
     return ptr;
 }
 
+static void *_get_resource_careful(const resource_manager_base_t base, const char *name)
+{
+    struct resource_node node = {0};
+    resource_manager_t manager = (resource_manager_t)base;
+    void *ptr = NULL;
+
+    do {
+        if(manager == NULL) {
+            break;
+        }
+        ptr = manager->default_ptr;
+        if(_search_node(manager, name, &node) != true) {
+            break;
+        }
+        ptr = node.ptr;
+    } while(0);
+
+    return ptr;
+}
+
 static void _set_default(resource_manager_base_t base, void *ptr)
 {
     resource_manager_t manager = (resource_manager_t)base;
@@ -177,6 +196,7 @@ resource_manager_base_t resource_manager_create(void)
         manager->base.add_resource = _add_resource;
         manager->base.remove_resource = _remove_resource;
         manager->base.get_resource = _get_resource;
+        manager->base.get_resource_careful = _get_resource_careful;
         manager->base.set_default = _set_default;
         INIT_LIST_HEAD(&manager->head);
     } while(0);

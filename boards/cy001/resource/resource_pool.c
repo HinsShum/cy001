@@ -22,6 +22,7 @@
  */
 
 /*---------- includes ----------*/
+#include "resource_pool.h"
 #include "resource_manager.h"
 #include "device.h"
 #include "driver.h"
@@ -98,6 +99,17 @@ void *resource_pool_get_device(const char *name)
 
     if(devices_pool) {
         resource = devices_pool->get_resource(devices_pool, name);
+    }
+
+    return resource;
+}
+
+void *resource_pool_get_device_careful(const char *name)
+{
+    void *resource = NULL;
+
+    if(devices_pool) {
+        resource = devices_pool->get_resource_careful(devices_pool, name);
     }
 
     return resource;

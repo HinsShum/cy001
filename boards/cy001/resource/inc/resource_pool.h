@@ -40,6 +40,7 @@ extern "C"
 extern void resource_pool_init(void);
 extern void resource_pool_deinit(void);
 extern void *resource_pool_get_device(const char *name);
+extern void *resource_pool_get_device_careful(const char *name);
 
 #ifdef __cplusplus
 }

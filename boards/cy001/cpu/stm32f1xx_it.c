@@ -158,7 +158,7 @@ void USART1_IRQHandler(void)
   static void *com = NULL;
 
   if(com == NULL) {
-    com = resource_pool_get_device("com");
+    com = resource_pool_get_device_careful("com");
   }
 
 	if(RESET != LL_USART_IsActiveFlag_RXNE(USART1)) {

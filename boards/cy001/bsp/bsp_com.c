@@ -126,6 +126,10 @@ static void bsp_deinit(void)
 static uint16_t bsp_write(uint8_t *pbuf, uint16_t len)
 {
     for(uint16_t i = 0; i < len; ++i) {
+        if(pbuf[i] == '\n') {
+            LL_USART_TransmitData8(USART1, '\r');
+            while(SET != LL_USART_IsActiveFlag_TC(USART1));
+        }
         LL_USART_TransmitData8(USART1, pbuf[i]);
         while(SET != LL_USART_IsActiveFlag_TC(USART1));
     }

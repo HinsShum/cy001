@@ -49,9 +49,8 @@ int fputc(int ch, FILE *p)
     uint8_t c = (uint8_t)ch;
 
     if(_serial == NULL) {
-        _serial = resource_pool_get_device("com");
+        _serial = resource_pool_get_device_careful("com");
     }
-
     device_write(_serial, &c, SERIAL_WIRTE_CHANGE_DIR_AUTOMATICALLY, sizeof(c));
 
     return ch;
@@ -60,9 +59,8 @@ int fputc(int ch, FILE *p)
 int _write(int fd, char *buf, int size)
 {
     if(_serial == NULL) {
-        _serial = resource_pool_get_device("com");
+        _serial = resource_pool_get_device_careful("com");
     }
-
     device_write(_serial, (void *)buf, SERIAL_WIRTE_CHANGE_DIR_AUTOMATICALLY, size);
 
     return size;
