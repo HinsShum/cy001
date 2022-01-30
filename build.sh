@@ -80,7 +80,7 @@ build_type=Debug
 build_tools="Unix Makefiles"
 download=0
 erase=0
-support_board=("posix_0_0_null" "win32_0_0_null" "cy001_0x08000000_0x08080000_STM32F103ZE")
+support_board=("posix_0_0_null" "win32_0_0_null" "cy001_0x08005000_0x08080000_STM32F103ZE")
 find_board=0
 
 while [ $# -gt 0 ]; do
