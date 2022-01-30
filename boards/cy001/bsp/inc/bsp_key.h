@@ -1,9 +1,9 @@
 /**
- * @file boards\cy001\resource\inc\resource_pool.h
+ * @file boards\cy001\bsp\inc\bsp_key.h
  *
  * Copyright (C) 2022
  *
- * resource_pool.h is free software: you can redistribute it and/or modify
+ * bsp_key.h is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -20,8 +20,8 @@
  *
  * @encoding utf-8
  */
-#ifndef __RESOURCE_POOL_H
-#define __RESOURCE_POOL_H
+#ifndef __BSP_KEY_H
+#define __BSP_KEY_H
 
 #ifdef __cplusplus
 extern "C"
@@ -37,14 +37,8 @@ extern "C"
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-extern void resource_pool_init(void);
-extern void resource_pool_deinit(void);
-extern void *resource_pool_get_device(const char *name);
-extern void *resource_pool_get_device_careful(const char *name);
-extern void *resource_pool_get_key(const char *name);
-extern void *resource_pool_get_key_careful(const char *name);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* __RESOURCE_POOL_H */
+#endif /* __BSP_KEY_H */

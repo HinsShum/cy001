@@ -25,6 +25,8 @@
 #include "cpu.h"
 #include "plat.h"
 #include "options.h"
+#include "resource_pool.h"
+#include "key_processing.h"
 
 /*---------- macro ----------*/
 /*---------- type define ----------*/
@@ -37,7 +39,10 @@ int main(void)
     cpu_config();
     plat_init();
     for(;;) {
-        __delay_ms(1000);
-        printf("Hello, World!\n");
+        __delay_ms(10);
+        key_processing(resource_pool_get_key_careful("keyup"));
+        key_processing(resource_pool_get_key_careful("key0"));
+        key_processing(resource_pool_get_key_careful("key1"));
+        key_processing(resource_pool_get_key_careful("key2"));
     }
 }
