@@ -134,6 +134,9 @@ static void _insert_to_active(struct timer_tcb *pnew)
             pnew->remaining_time = pnew->period - remaining_time_total;
             list_add_tail(&pnew->node, &_timer_active);
         }
+        /* update timer count */
+        p = list_first_entry(&_timer_active, struct timer_tcb, node);
+        _timer_count = p->remaining_time;
     }
     _unlock();
 }
@@ -148,24 +151,31 @@ static void inline _remove_from_ready(struct timer_tcb *premove)
 static void _remove_from_active(struct timer_tcb *premove)
 {
     struct timer_tcb *next_tcb = NULL;
+    struct timer_tcb *p = NULL;
 
     _lock();
+    /* update the first soft timer remaining time */
+    p = list_first_entry(&_timer_active, struct timer_tcb, node);
+    p->remaining_time = _timer_count;
     if(list_last_entry(&_timer_active, struct timer_tcb, node) != premove) {
         next_tcb = list_next_entry(premove, struct timer_tcb, node);
         next_tcb->remaining_time += premove->remaining_time;
     }
     _del_and_insert_to_idle(premove);
+    /* update timer count */
+    p = list_first_entry(&_timer_active, struct timer_tcb, node);
+    _timer_count = p->remaining_time;
     _unlock();
 }
 
 void soft_timer_init(void)
 {
+    INIT_LIST_HEAD(&_timer_idle);
+    INIT_LIST_HEAD(&_timer_active);
+    INIT_LIST_HEAD(&_timer_ready);
     for(uint32_t i = 0; i < CONFIG_NUMBER_OF_SOFTTIMERS; ++i) {
-        INIT_LIST_HEAD(&_timer_idle);
-        INIT_LIST_HEAD(&_timer_active);
-        INIT_LIST_HEAD(&_timer_ready);
         memset(&_timer[i], 0, sizeof(struct timer_tcb));
-        list_add_tail(&_timer[i].node, &_timer_idle);
+        list_add_tail(&_timer[i].node, &_timer_idle);       
     }
 }
 
@@ -193,12 +203,16 @@ void soft_timer_deinit(void)
 
 int32_t soft_timer_create(const char *name, uint8_t mode, uint32_t period, void *cb_data, void (*cb)(void *cb_data))
 {
-    int32_t retval = SOFTTIMER_ERR_FULL;
+    int32_t retval = -SOFTTIMER_ERR_FULL;
     struct timer_tcb *tcb = NULL;
 
     do {
+        if(name == NULL || period == 0 || cb == NULL) {
+            retval = -SOFTTIMER_ERR_ERROR;
+            break;
+        }
         if(_find(name, &_timer_active) || _find(name, &_timer_ready)) {
-            retval = SOFTTIMER_ERR_EXIT;
+            retval = -SOFTTIMER_ERR_EXIT;
             break;
         }
         if(list_empty_careful(&_timer_idle)) {
@@ -223,7 +237,7 @@ int32_t soft_timer_create(const char *name, uint8_t mode, uint32_t period, void 
 
 int32_t soft_timer_destroy(const char *name)
 {
-    int32_t retval = SOFTTIMER_ERR_NOT_FOUND;
+    int32_t retval = -SOFTTIMER_ERR_NOT_FOUND;
     struct timer_tcb *p = NULL;
 
     do {
@@ -277,6 +291,7 @@ void soft_timer_tick(void)
                 _del_and_insert_to_ready(tcb);
                 continue;
             }
+            _timer_count = tcb->remaining_time;
             break;
         }
         _unlock();
