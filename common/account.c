@@ -424,9 +424,12 @@ void account_destroy(account_t account)
             memset(&account->priv.buffer_manager, 0, sizeof(account->priv.buffer_manager));
             account->priv.buffer_size = 0;
         }
-        /* TODO:
-         *  delete timer
-         */
+        /* destroy timer */
+        if(account->priv.timer) {
+            soft_timer_destroy(account->priv.timer);
+            account->priv.timer = NULL;
+            __debug_info("Account: account(%s) timer delete\n", account->id);
+        }
         /* let subscribers unfollow */
         list_for_each_entry_safe(p, n, struct account_node, &account->subscribers, node) {
             sub = p->account;
