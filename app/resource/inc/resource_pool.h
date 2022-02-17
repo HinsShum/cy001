@@ -1,5 +1,5 @@
 /**
- * @file boards\cy001\resource\inc\resource_pool.h
+ * @file app\resource\inc\resource_pool.h
  *
  * Copyright (C) 2022
  *

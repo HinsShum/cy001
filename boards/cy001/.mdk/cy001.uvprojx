@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F103xE, USE_HAL_DRIVER, USE_FULL_LL_DRIVER, HSE_VALUE=8000000, CONFIG_OPTIONS_FILE=&lt;config/options.h&gt;, CONFIG_HEAP_PORT_FILE=&lt;config/heap_port.h&gt;</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\arch\stm32f10x\inc;..\bsp\inc;..\cpu\inc;..\;..\..\..\common\inc;..\..\..\driver\include;..\..\..\inc;..\..\..\lib\st\stm32f10x\peripherals\inc;..\..\..\lib\st\stm32f10x\peripherals\inc\Legacy;..\..\..\utils\include;..\..\..\components\heap\inc;..\resource\inc;..\src\inc</IncludePath>
+              <IncludePath>..\..\..\arch\stm32f10x\inc;..\bsp\inc;..\cpu\inc;..\;..\..\..\common\inc;..\..\..\driver\include;..\..\..\inc;..\..\..\lib\st\stm32f10x\peripherals\inc;..\..\..\lib\st\stm32f10x\peripherals\inc\Legacy;..\..\..\utils\include;..\..\..\components\heap\inc;..\..\..\app\src\inc;..\..\..\app\resource\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -446,7 +446,7 @@
             <File>
               <FileName>plat.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\plat.c</FilePath>
+              <FilePath>..\..\..\app\src\plat.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -456,7 +456,7 @@
             <File>
               <FileName>resource_pool.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\resource\resource_pool.c</FilePath>
+              <FilePath>..\..\..\app\resource\resource_pool.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -532,6 +532,11 @@
               <FileName>pingpong_buffer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\common\pingpong_buffer.c</FilePath>
+            </File>
+            <File>
+              <FileName>key_processing.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\key_processing.c</FilePath>
             </File>
           </Files>
         </Group>

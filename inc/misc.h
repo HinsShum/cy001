@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file config/misc.h
  *
  * Copyright (C) 2021
