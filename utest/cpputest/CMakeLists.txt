@@ -44,25 +44,23 @@ function(DIRNAME INPUT OUTPUT)
     set(${OUTPUT} ${DIR} PARENT_SCOPE)
 endfunction(DIRNAME)
 
-# set global include directory
-set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/../../inc")
-
-#set target c file pathname
-set(C_SOURCE_FILES)
-file(GLOB CXX_SOURCE_FILES "*.cpp")
-# set project lib
-set(C_SOURCE_LIBS)
+# set global variables
+set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+set(G_INC_VPATH "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/../../inc")
+set(G_C_FILES)
+file(GLOB G_CXX_FILES "*.cpp")
+set(G_LIBS)
 
 include(tools/utest.cmake)
 
 # tell cmake asm file also is c file
-set_property(SOURCE ${C_SOURCE_FILES} PROPERTY LANGUAGE C)
-set_property(SOURCE ${CXX_SOURCE_FILES} PROPERTY LANGUAGE CXX)
+set_property(SOURCE ${G_C_FILES} PROPERTY LANGUAGE C)
+set_property(SOURCE ${G_CXX_FILES} PROPERTY LANGUAGE CXX)
 
-add_executable(${PROJECT_NAME}.elf ${C_SOURCE_FILES} ${CXX_SOURCE_FILES})
-target_include_directories(${PROJECT_NAME}.elf PRIVATE "${G_SOURCE_INCLUDE_DIRS}")
+add_executable(${PROJECT_NAME}.elf ${G_C_FILES} ${G_CXX_FILES})
+target_include_directories(${PROJECT_NAME}.elf PRIVATE ${G_INC_VPATH})
 
-target_link_libraries(${PROJECT_NAME}.elf PUBLIC ${C_SOURCE_LIBS})
+target_link_libraries(${PROJECT_NAME}.elf PUBLIC ${G_LIBS})
 
 if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" AND NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     # binary

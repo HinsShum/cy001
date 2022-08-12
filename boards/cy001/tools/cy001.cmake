@@ -6,20 +6,16 @@
 #        which is the required name of the file CMake looks for:
 cmake_minimum_required(VERSION 3.1)
 
-# set current boards directroy to search path
-set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}")
+set(G_INC_VPATH ${G_INC_VPATH} ${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME})
 
-# set marco for compile
 add_definitions(-DCONFIG_OPTIONS_FILE="config/options.h")
-add_definitions(-DCONFIG_HEAP_PORT_FILE="config/heap_port.h")
 
-# include other cmake
-include("${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}/config/driver.cmake")
-include("${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}/config/stlib.cmake")
+include(${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}/config/components.cmake)
+include(${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}/config/driver.cmake)
+include(${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}/config/stlib.cmake)
 
-# enter sub directory
 add_subdirectory(arch/stm32f10x)
-add_subdirectory("boards/${BOARD_NAME}/cpu")
-add_subdirectory("boards/${BOARD_NAME}/bsp")
-add_subdirectory("boards/${BOARD_NAME}/src")
+add_subdirectory(boards/${BOARD_NAME}/cpu)
+add_subdirectory(boards/${BOARD_NAME}/bsp)
+add_subdirectory(boards/${BOARD_NAME}/src)
 add_subdirectory(lib/st/stm32f10x/peripherals)

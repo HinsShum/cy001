@@ -6,14 +6,11 @@
 #        which is the required name of the file CMake looks for:
 cmake_minimum_required(VERSION 3.1)
 
-# search c files
-file(GLOB CFILES "*.c")
+file(GLOB FILES "*.c")
 
-# if you don't want compile some c files, add them to CFILESOUT
-set(CFILESOUT "")
-filter_out(CFILESOUT CFILES CFILES)
+# set filter out files
+set(FILES_OUT "")
+filter_out(FILES_OUT FILES FILES)
 
-# add c files to glob variable
-set(C_SOURCE_FILES ${C_SOURCE_FILES} ${CFILES} PARENT_SCOPE)
-# set current directory to the glob search path
-set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/inc" PARENT_SCOPE)
+set(G_C_FILES ${G_C_FILES} ${FILES} PARENT_SCOPE)
+set(G_INC_VPATH ${G_INC_VPATH} "${CMAKE_CURRENT_SOURCE_DIR}/inc" PARENT_SCOPE)

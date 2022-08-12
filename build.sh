@@ -4,9 +4,9 @@
 function build()
 {
     if [ "$board_name" == "posix" -o "$board_name" == "win32" ]; then
-        cmake -B build -G "$build_tools"  -DBOARD_NAME=$board_name -DPROGRAM_NAME=$program_name -DCMAKE_BUILD_TYPE=$build_type
+        cmake -B build -G "$build_tools"  -DBOARD_NAME=$board_name -DCMAKE_BUILD_TYPE=$build_type
     else
-        cmake -B build -G "$build_tools" -DBOARD_NAME=$board_name -DPROGRAM_NAME=$program_name -DCMAKE_TOOLCHAIN_FILE=boards/${board_name}/tools/${board_name}_toolchain.cmake -DCMAKE_BUILD_TYPE=$build_type
+        cmake -B build -G "$build_tools" -DBOARD_NAME=$board_name -DCMAKE_TOOLCHAIN_FILE=boards/${board_name}/tools/${board_name}_toolchain.cmake -DCMAKE_BUILD_TYPE=$build_type
     fi
 }
 
@@ -32,10 +32,10 @@ function generate_flash_jlink()
     fi
     rm build/download.* -f
     rm build/erase.* -f
-    echo -e "si SWD\nspeed 4000\nr\nh\nloadbin build/${board_name}.bin,${load_start_address}\nr\nexit" > build/download.jlink
-    echo "${jlink} -Device ${device} -If SWD -Speed 4000 -JTAGConf -1,-1 -autoconnect 1 -CommanderScript build/download.jlink" > build/download.sh
-    echo -e "si SWD\nspeed 4000\nr\nh\nerase ${load_start_address} ${load_end_address}\nexit" > build/erase.jlink
-    echo "${jlink} -Device ${device} -If SWD -Speed 4000 -JTAGConf -1,-1 -autoconnect 1 -CommanderScript build/erase.jlink" > build/erase.sh
+    echo -e "si SWD\nspeed 12000\nr\nh\nloadbin build/${board_name}.bin,${load_start_address}\nr\nexit" > build/download.jlink
+    echo "${jlink} -Device ${device} -If SWD -Speed 12000 -JTAGConf -1,-1 -autoconnect 1 -CommanderScript build/download.jlink" > build/download.sh
+    echo -e "si SWD\nspeed 12000\nr\nh\nerase ${load_start_address} ${load_end_address}\nexit" > build/erase.jlink
+    echo "${jlink} -Device ${device} -If SWD -Speed 12000 -JTAGConf -1,-1 -autoconnect 1 -CommanderScript build/erase.jlink" > build/erase.sh
 }
 
 function download_bin()
@@ -77,10 +77,10 @@ build=0
 compile=0
 clear=0
 build_type=Debug
-build_tools="Unix Makefiles"
+build_tools="Ninja"
 download=0
 erase=0
-support_board=("posix_0_0_null" "win32_0_0_null" "cy001_0x08005000_0x08080000_STM32F103ZE")
+support_board=("posix:0:0:null" "win32:0:0:null" "cy001:0x08005000:0x08080000:STM32F103ZE")
 find_board=0
 
 while [ $# -gt 0 ]; do
@@ -90,10 +90,8 @@ while [ $# -gt 0 ]; do
         compile=1
     elif [ $( expr $1 : '-[R|r]' ) -gt 0 ]; then
         clear=1
-    elif [ $( expr $1 : '--plat=[a-z|A-Z|0-9]\{1,\}' ) -gt 0 ]; then
-        board_name=$( expr $1 : '--plat=\([a-z|A-Z|0-9]\{1,\}\)' )
-    elif [ $( expr $1 : '--name=[a-z|A-Z|0-9]\{1,\}' ) -gt 0 ]; then
-        program_name=$( expr $1 : '--name=\([a-z|A-Z|0-9]\{1,\}\)' )
+    elif [ $( expr $1 : '--plat=[a-z|A-Z|0-9|_]\{1,\}' ) -gt 0 ]; then
+        board_name=$( expr $1 : '--plat=\([a-z|A-Z|0-9|_]\{1,\}\)' )
     elif [ $( expr $1 : '--release' ) -gt 0 ]; then
         build_type=Release
     elif [ $( expr $1 : '--debug' ) -gt 0 ]; then
@@ -120,7 +118,7 @@ if [ -n "$board_name" ]; then
     for loop in ${support_board[*]}
     do
         # split by '_'
-        support=(${loop//_/ })
+        support=(${loop//:/ })
         if [ $( expr $board_name : ${support[0]} ) -gt 0 ]; then
             find_board=1
             load_start_address=${support[1]}
@@ -153,7 +151,6 @@ fi
 
 if [ $compile -gt 0 ]; then
     compile
-    cp build/*.elf* ./
 fi
 
 if [ $download -gt 0 ]; then

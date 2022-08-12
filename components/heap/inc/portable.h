@@ -25,9 +25,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#ifdef CONFIG_HEAP_PORT_FILE
-#include CONFIG_HEAP_PORT_FILE
-#endif
+#include "heap_config.h"
 
 /*---------- macro ----------*/
 #ifndef PORT_BYTE_ALIGNMENT

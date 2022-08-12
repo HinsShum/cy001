@@ -13,11 +13,11 @@ add_definitions(-DNDEBUG)
 add_definitions(-DCONFIG_OPTIONS_FILE="config/options.h")
 
 # add cpputest library
-set(C_SOURCE_LIBS ${C_SOURCE_LIBS} "CppUTest" "CppUTestExt" "pthread")
+set(G_LIBS ${G_LIBS} "CppUTest" "CppUTestExt" "pthread")
 
 # add source files
-set(C_SOURCE_FILES ${C_SOURCE_FILES} "${TOP_DIRS}/common/soft_timer.c")
-set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} "${TOP_DIRS}/common/inc")
+set(G_C_FILES ${G_C_FILES} "${TOP_DIRS}/common/soft_timer.c")
+set(G_INC_VPATH ${G_INC_VPATH} "${TOP_DIRS}/common/inc")
 
 # add sub directory
 add_subdirectory(common)

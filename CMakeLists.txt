@@ -22,10 +22,7 @@ else()
     endif()
 endif()
 
-# check program name
-if("${PROGRAM_NAME}" STREQUAL "")
-    set(PROGRAM_NAME "demo")
-endif()
+set(PROGRAM_NAME ${BOARD_NAME})
 
 # set project describe information
 project(${PROGRAM_NAME} VERSION 1.0.0 DESCRIPTION "A demo CMake project" LANGUAGES C)
@@ -61,13 +58,11 @@ function(DIRNAME INPUT OUTPUT)
     set(${OUTPUT} ${DIR} PARENT_SCOPE)
 endfunction(DIRNAME)
 
-# set global include directory
-set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/inc")
-
-#set target c file pathname
-set(C_SOURCE_FILES)
-# set project lib
-set(C_SOURCE_LIBS)
+# set global variables
+set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+set(G_INC_VPATH "${PROJECT_SOURCE_DIR}/inc")
+set(G_C_FILES)
+set(G_LIBS)
 
 include("boards/${BOARD_NAME}/tools/${BOARD_NAME}.cmake")
 add_subdirectory(driver)
@@ -76,13 +71,12 @@ add_subdirectory(utils)
 add_subdirectory(components)
 add_subdirectory(app)
 
-# tell cmake asm file also is c file
-set_property(SOURCE ${C_SOURCE_FILES} PROPERTY LANGUAGE C)
+set_property(SOURCE ${G_C_FILES} PROPERTY LANGUAGE C)
 
-add_executable(${PROJECT_NAME}.elf ${C_SOURCE_FILES})
-target_include_directories(${PROJECT_NAME}.elf PRIVATE "${G_SOURCE_INCLUDE_DIRS}")
+add_executable(${PROJECT_NAME}.elf ${G_C_FILES})
+target_include_directories(${PROJECT_NAME}.elf PRIVATE ${G_INC_VPATH})
 
-target_link_libraries(${PROJECT_NAME}.elf PUBLIC ${C_SOURCE_LIBS})
+target_link_libraries(${PROJECT_NAME}.elf PRIVATE ${G_LIBS})
 
 if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" AND NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     # binary

@@ -3,7 +3,7 @@
 
 function build()
 {
-    cmake -B build -G "$build_tools"  -DBOARD_NAME=$board_name -DPROGRAM_NAME=$program_name -DCMAKE_BUILD_TYPE=$build_type
+    cmake -B build -G "$build_tools"  -DBOARD_NAME=$board_name -DCMAKE_BUILD_TYPE=$build_type
 }
 
 function compile()
@@ -42,7 +42,7 @@ build=0
 compile=0
 clear=0
 build_type=Debug
-build_tools="Unix Makefiles"
+build_tools="Ninja"
 
 while [ $# -gt 0 ]; do
     if [ $( expr $1 : '-[B|b]' ) -gt 0 ]; then
@@ -51,8 +51,6 @@ while [ $# -gt 0 ]; do
         compile=1
     elif [ $( expr $1 : '-[R|r]' ) -gt 0 ]; then
         clear=1
-    elif [ $( expr $1 : '--name=[a-z|A-Z|0-9]\{1,\}' ) -gt 0 ]; then
-        program_name=$( expr $1 : '--name=\([a-z|A-Z|0-9]\{1,\}\)' )
     elif [ $( expr $1 : '--release' ) -gt 0 ]; then
         build_type=Release
     elif [ $( expr $1 : '--debug' ) -gt 0 ]; then
@@ -77,7 +75,6 @@ fi
 
 if [ $compile -gt 0 ]; then
     compile
-    cp build/*.elf* ./
 fi
 
 exit 0

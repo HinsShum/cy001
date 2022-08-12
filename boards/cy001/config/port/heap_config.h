@@ -1,9 +1,9 @@
 /**
- * @file boards\cy001\config\heap_port.h
+ * @file boards\cy001\config\port\heap_config.h
  *
  * Copyright (C) 2022
  *
- * heap_port.h is free software: you can redistribute it and/or modify
+ * heap_config.h is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -20,8 +20,8 @@
  *
  * @encoding utf-8
  */
-#ifndef __HEAP_PORT_H
-#define __HEAP_PORT_H
+#ifndef __HEAP_CONFIG_H
+#define __HEAP_CONFIG_H
 
 #ifdef __cplusplus
 extern "C"
@@ -43,4 +43,4 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-#endif /* __HEAP_PORT_H */
+#endif /* __HEAP_CONFIG_H */
