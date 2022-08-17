@@ -311,9 +311,9 @@ static uint32_t _get_publisher_count(account_t account)
     return count;
 }
 
-static void _timer_callback_handler(void *param)
+static void _timer_callback_handler(timer_handle_t timer)
 {
-    account_t account = (account_t)param;
+    account_t account = (account_t)soft_timer_get_user_data(timer);
     account_event_cb_t cb = account->priv.event_cb;
     struct account_event_param evt = {0};
 
@@ -335,8 +335,20 @@ static void _set_timer_period(account_t account, uint32_t period)
             account->priv.timer = NULL;
         }
         if(period) {
-            soft_timer_create(account->id, SOFTTIMER_MODE_REPEAT, period, account, _timer_callback_handler);
-            account->priv.timer = (void *)account->id;
+            account->priv.timer = soft_timer_create(account->id, SFTIM_MODE_REPEAT, period, account, _timer_callback_handler);
+        }
+    }
+}
+
+static void _set_timer_enable(account_t account, bool en)
+{
+    timer_handle_t timer = account->priv.timer;
+
+    if(timer) {
+        if(en) {
+            soft_timer_start(timer);
+        } else {
+            soft_timer_stop(timer);
         }
     }
 }
@@ -378,9 +390,7 @@ bool account_create(account_t account, const char *id, data_center_t center, uin
         account->ops.notify = _notify;
         account->ops.set_event_cb = _set_event_callback;
         account->ops.set_timer_period = _set_timer_period;
-#if NOT_SUPPORT_NOW
-        account->ops.set_timer_enable = NULL;
-#endif
+        account->ops.set_timer_enable = _set_timer_enable;
         account->ops.get_publisher_size = _get_publisher_count;
         account->ops.get_subscriber_size = _get_subscriber_count;
         if(buf_size != 0) {

@@ -33,6 +33,7 @@ extern "C"
 #include <stdbool.h>
 #include <stddef.h>
 #include "pingpong_buffer.h"
+#include "soft_timer.h"
 #include "list.h"
 
 /*---------- macro ----------*/
@@ -80,7 +81,7 @@ struct account {
     struct list_head subscribers;
     struct {
         account_event_cb_t event_cb;
-        void *timer;
+        timer_handle_t timer;
         struct pingpong_buffer buffer_manager;
         uint32_t buffer_size;
     } priv;
@@ -148,7 +149,6 @@ struct account {
          * @retval None
          */
         void (*set_timer_period)(account_t account, uint32_t period);
-#if NOT_SUPPORT_NOW
         /**
          * @brief Set timer enable.
          * @param account: Pointer to the account.
@@ -156,7 +156,6 @@ struct account {
          * @retval None
          */
         void (*set_timer_enable)(account_t account, bool en);
-#endif
         /**
          * @brief Get the number of the publishers
          * @param account: Pointer of the account.
