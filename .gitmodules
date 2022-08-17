@@ -6,3 +6,6 @@
 	path = utils
 	url = git@github.com:HinsShum/utils-frame.git
 	branch = main
+[submodule "svd"]
+	path = svd
+	url = git@github.com:HinsShum/svd.git
