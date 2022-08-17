@@ -56,6 +56,20 @@ extern "C"
 #define ARRAY_SIZE(x)                   (sizeof(x) / sizeof((x)[0]))
 #define FIELD_SIZEOF(t, f)              (sizeof(((t *)0)->f))
 
+/* assert definition
+ */
+#undef assert
+#ifdef NDEBUG
+#define assert(expr)                  ((void)0U)
+#else
+#define assert(expr)                  do { \
+                                            if(!(expr)) { \
+                                                __debug_error("Assert in %s:%d\n", __FILE__, __LINE__); \
+                                                for(;;); \
+                                            } \
+                                        } while(0)
+#endif
+
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
