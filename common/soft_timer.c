@@ -267,7 +267,7 @@ void *soft_timer_get_user_data(timer_handle_t tcb)
     return tcb->user_data;
 }
 
-void soft_time_poll(void)
+void soft_timer_poll(void)
 {
     timer_handle_t tcb = NULL;
 
