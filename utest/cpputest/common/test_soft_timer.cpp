@@ -33,30 +33,35 @@
 /*---------- function ----------*/
 TEST_GROUP(soft_timer)
 {
+    timer_handle_t timer = nullptr;
+
     void setup(void)
     {
-        soft_timer_init();
     }
 
     void teardown(void)
     {
-        soft_timer_deinit();
+        if(timer) {
+            soft_timer_destroy(timer);
+            timer = nullptr;
+        }
     }
 
     void call_timer_ticks(uint32_t times)
     {
         while(times-- > 0) {
             soft_timer_tick();
+            soft_timer_poll();
         }
     }
 };
 
-void callback(void *cb_data)
+void timer_expired_cb(timer_handle_t timer)
 {
-    uint32_t *pvalue = (uint32_t *)cb_data;
+    int32_t *pval = (int32_t *)soft_timer_get_user_data(timer);
 
-    if(cb_data) {
-        *pvalue = *pvalue - 1;
+    if(pval) {
+        *pval = *pval - 1;
     }
 }
 
@@ -66,25 +71,67 @@ TEST(soft_timer, NothingHappendAfterSoftTimerInit)
 
 TEST(soft_timer, CreateSoftTimerWithNoName)
 {
-    LONGS_EQUAL(-SOFTTIMER_ERR_ERROR, soft_timer_create(NULL, SOFTTIMER_MODE_SINGLE, 10, NULL, NULL));
+    uint32_t temp = 0;
+
+    timer = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 1000, &temp, timer_expired_cb);
+    CHECK_FALSE(nullptr == timer);
 }
 
-TEST(soft_timer, CreateSingleSoftTimerWithPeriodIsZero)
+TEST(soft_timer, CreateTimerWithPeriodIsZero)
 {
-    LONGS_EQUAL(-SOFTTIMER_ERR_ERROR, soft_timer_create("ZeroPeriodTimer", SOFTTIMER_MODE_SINGLE, 0, NULL, NULL));
+    uint32_t temp = 0;
 
+    timer = soft_timer_create("ZeroPeriodTimer", SFTIM_MODE_SINGLE, 0, &temp, timer_expired_cb);
+    CHECK_TRUE(nullptr == timer);
 }
 
-TEST(soft_timer, CreateSingleSoftTimerWithNoCallback)
+TEST(soft_timer, CreateTimerWithNoCallback)
 {
-    LONGS_EQUAL(-SOFTTIMER_ERR_ERROR, soft_timer_create("OnePeriodTimer", SOFTTIMER_MODE_SINGLE, 1, NULL, NULL));
+    uint32_t temp = 0;
+
+    timer = soft_timer_create("ZeroPeriodTimer", SFTIM_MODE_SINGLE, 1000, &temp, nullptr);
+    CHECK_FALSE(nullptr == timer);
 }
 
-TEST(soft_timer, CreateOneSingleSoftTimerWithPeriodOne)
+TEST(soft_timer, CreateTimerWithoutUserData)
+{
+    timer = soft_timer_create("WithoutUserData", SFTIM_MODE_SINGLE, 1000, nullptr, timer_expired_cb);
+    CHECK_FALSE(nullptr == timer);
+}
+
+TEST(soft_timer, CreateTimerWithErrorReloadMode)
+{
+    timer = soft_timer_create(nullptr, (soft_timer_mode_t)(SFTIM_MODE_REPEAT + 1), 1000, nullptr, timer_expired_cb);
+    CHECK_TRUE(nullptr == timer);
+}
+
+TEST(soft_timer, DormatStateAfterCreate)
+{
+    timer = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 1000, nullptr, timer_expired_cb);
+    CHECK_FALSE(soft_timer_is_active(timer));
+}
+
+TEST(soft_timer, AcitveStateAfterStart)
+{
+    timer = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 1000, nullptr, timer_expired_cb);
+    soft_timer_start(timer);
+    CHECK_TRUE(soft_timer_is_active(timer));
+}
+
+TEST(soft_timer, DormatStateAfterOneShotTimerExpired)
+{
+    timer = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 1, nullptr, timer_expired_cb);
+    soft_timer_start(timer);
+    soft_timer_tick();
+    CHECK_FALSE(soft_timer_is_active(timer));
+}
+
+TEST(soft_timer, OneShotTimerWillExpiredOnce)
 {
     uint32_t value = 10;
 
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("OnePeriodTimer", SOFTTIMER_MODE_SINGLE, 1, &value, callback));
+    timer = soft_timer_create("OnePeriodTimer", SFTIM_MODE_SINGLE, 1, &value, timer_expired_cb);
+    soft_timer_start(timer);
     soft_timer_tick();
     soft_timer_poll();
     LONGS_EQUAL(9, value);
@@ -93,72 +140,78 @@ TEST(soft_timer, CreateOneSingleSoftTimerWithPeriodOne)
     LONGS_EQUAL(9, value);
 }
 
-TEST(soft_timer, CreateOneRepeatSoftTimerWithPeriodOne)
+TEST(soft_timer, AutoReloadTimerWillExpiresAllways)
 {
     uint32_t value = 100;
 
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("OneRepeatTimer", SOFTTIMER_MODE_REPEAT, 1, &value, callback));
-    for(uint32_t i = 1; i < 100; i++) {
-        soft_timer_tick();
-        soft_timer_poll();
-        LONGS_EQUAL(100, value + i);
-    }
+    timer = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 1, &value, timer_expired_cb);
+    soft_timer_start(timer);
+    call_timer_ticks(value);
+    LONGS_EQUAL(0, value);
 }
 
-TEST(soft_timer, DestroyOneSoftTimerWithPeriodOneTestOne)
+TEST(soft_timer, DestoryTimer)
 {
     uint32_t value = 10;
 
-    soft_timer_create("OnePeriodTimer", SOFTTIMER_MODE_SINGLE, 1, &value, callback);
-    soft_timer_tick();
-    soft_timer_destroy("OnePeriodTimer");
-    soft_timer_poll();
-    LONGS_EQUAL(10, value);
+    timer = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 1, &value, timer_expired_cb);
+    soft_timer_start(timer);
+    call_timer_ticks(1);
+    LONGS_EQUAL(9, value);
+    soft_timer_destroy(timer);
+    timer = nullptr;
+    call_timer_ticks(1);
+    LONGS_EQUAL(9, value);
 }
 
-TEST(soft_timer, DestroyOneSoftTimerWithPeriodOneTestTwo)
+TEST(soft_timer, StopTimer)
 {
     uint32_t value = 10;
 
-    soft_timer_create("OnePeriodTimer", SOFTTIMER_MODE_SINGLE, 1, &value, callback);
-    soft_timer_destroy("OnePeriodTimer");
-    soft_timer_tick();
-    soft_timer_poll();
+    timer = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 1, &value, timer_expired_cb);
+    soft_timer_start(timer);
+    call_timer_ticks(1);
+    LONGS_EQUAL(9, value);
+    soft_timer_stop(timer);
+    timer = nullptr;
+    call_timer_ticks(1);
+    LONGS_EQUAL(9, value);
+}
+
+TEST(soft_timer, RestartTimer)
+{
+    uint32_t value = 10;
+
+    timer = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 2, &value, timer_expired_cb);
+    soft_timer_start(timer);
+    call_timer_ticks(1);
+    soft_timer_restart(timer);
+    call_timer_ticks(1);
     LONGS_EQUAL(10, value);
+    call_timer_ticks(1);
+    LONGS_EQUAL(9, value);
 }
 
-TEST(soft_timer, CreateTwoSingleSoftTimerTestOne)
+TEST(soft_timer, CreateTwoOneShotTimer)
 {
     uint32_t one_period_value = 10;
     uint32_t two_period_value = 10;
+    timer_handle_t timer1 = nullptr, timer2 = nullptr;
 
-    soft_timer_create("OnePeriodTimer", SOFTTIMER_MODE_SINGLE, 1, &one_period_value, callback);
-    soft_timer_create("TwoPeriodTimer", SOFTTIMER_MODE_SINGLE, 2, &two_period_value, callback);
-    soft_timer_tick();
-    soft_timer_poll();
+    timer2 = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 2, &two_period_value, timer_expired_cb);
+    timer1 = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 1, &one_period_value, timer_expired_cb);
+    soft_timer_start(timer1);
+    soft_timer_start(timer2);
+    call_timer_ticks(1);
     LONGS_EQUAL(9, one_period_value);
     LONGS_EQUAL(10, two_period_value);
-    soft_timer_tick();
-    soft_timer_poll();
+    CHECK_FALSE(soft_timer_is_active(timer1));
+    call_timer_ticks(1);
     LONGS_EQUAL(9, one_period_value);
     LONGS_EQUAL(9, two_period_value);
-}
-
-TEST(soft_timer, CreateTwoSingleSoftTimerTestTwo)
-{
-    uint32_t one_period_value = 10;
-    uint32_t two_period_value = 10;
-
-    soft_timer_create("TwoPeriodTimer", SOFTTIMER_MODE_SINGLE, 2, &two_period_value, callback);
-    soft_timer_create("OnePeriodTimer", SOFTTIMER_MODE_SINGLE, 1, &one_period_value, callback);
-    soft_timer_tick();
-    soft_timer_poll();
-    LONGS_EQUAL(9, one_period_value);
-    LONGS_EQUAL(10, two_period_value);
-    soft_timer_tick();
-    soft_timer_poll();
-    LONGS_EQUAL(9, one_period_value);
-    LONGS_EQUAL(9, two_period_value);
+    CHECK_FALSE(soft_timer_is_active(timer2));
+    soft_timer_destroy(timer1);
+    soft_timer_destroy(timer2);
 }
 
 TEST(soft_timer, CreateMultiSingleSoftTimer)
@@ -167,213 +220,124 @@ TEST(soft_timer, CreateMultiSingleSoftTimer)
     uint32_t two_period_value = 10;
     uint32_t five_period_value = 10;
     uint32_t ten_period_value = 10;
+    timer_handle_t timer1 = nullptr, timer2 = nullptr, timer3 = nullptr, timer4 = nullptr;
 
-    soft_timer_create("FivePeriodTimer", SOFTTIMER_MODE_SINGLE, 5, &five_period_value, callback);
-    soft_timer_create("OnePeriodTImer", SOFTTIMER_MODE_SINGLE, 1, &one_period_value, callback);
-    soft_timer_create("TenPeriodTimer", SOFTTIMER_MODE_SINGLE, 10, &ten_period_value, callback);
-    soft_timer_create("TwoPeriodTImer", SOFTTIMER_MODE_SINGLE, 2, &two_period_value, callback);
+    timer4 = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 10, &ten_period_value, timer_expired_cb);
+    timer3 = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 5, &five_period_value, timer_expired_cb);
+    timer2 = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 2, &two_period_value, timer_expired_cb);
+    timer1 = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 1, &one_period_value, timer_expired_cb);
+    soft_timer_start(timer3);
+    soft_timer_start(timer1);
+    soft_timer_start(timer2);
+    soft_timer_start(timer4);
     call_timer_ticks(1);
-    soft_timer_poll();
     LONGS_EQUAL(9, one_period_value);
     LONGS_EQUAL(10, two_period_value);
     LONGS_EQUAL(10, five_period_value);
     LONGS_EQUAL(10, ten_period_value);
     call_timer_ticks(1);
-    soft_timer_poll();
     LONGS_EQUAL(9, one_period_value);
     LONGS_EQUAL(9, two_period_value);
     LONGS_EQUAL(10, five_period_value);
     LONGS_EQUAL(10, ten_period_value);
     call_timer_ticks(3);
-    soft_timer_poll();
+    CHECK_FALSE(soft_timer_is_active(timer2));
     LONGS_EQUAL(9, one_period_value);
     LONGS_EQUAL(9, two_period_value);
     LONGS_EQUAL(9, five_period_value);
     LONGS_EQUAL(10, ten_period_value);
     call_timer_ticks(5);
-    soft_timer_poll();
     LONGS_EQUAL(9, one_period_value);
     LONGS_EQUAL(9, two_period_value);
     LONGS_EQUAL(9, five_period_value);
     LONGS_EQUAL(9, ten_period_value);
+    soft_timer_destroy(timer1);
+    soft_timer_destroy(timer2);
+    soft_timer_destroy(timer3);
+    soft_timer_destroy(timer4);
 }
 
-TEST(soft_timer, CreateTwoSingleSoftTimerWithSamePeriod)
+TEST(soft_timer, CreateTwoOneShotTimerWithSamePeriod)
 {
     uint32_t value1 = 10;
     uint32_t value2 = 10;
+    timer_handle_t timer1 = nullptr, timer2 = nullptr;
 
-    soft_timer_create("OnePeriodTImer1", SOFTTIMER_MODE_SINGLE, 1, &value1, callback);
-    soft_timer_create("OnePeriodTImer2", SOFTTIMER_MODE_SINGLE, 1, &value2, callback);
+    timer1 = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 1, &value1, timer_expired_cb);
+    timer2 = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 1, &value2, timer_expired_cb);
+    soft_timer_start(timer1);
+    soft_timer_start(timer2);
     call_timer_ticks(1);
-    soft_timer_poll();
     LONGS_EQUAL(9, value1);
     LONGS_EQUAL(9, value2);
+    soft_timer_destroy(timer1);
+    soft_timer_destroy(timer2);
 }
 
-TEST(soft_timer, CreateTwoSoftTimerAndDestroyTwoPeriodTimer)
+TEST(soft_timer, CreateMultiAutoRealodTimer)
 {
-    uint32_t one_period_value = 10;
-    uint32_t two_period_value = 10;
+    int32_t ten_period_repeat_value = 100;
+    int32_t three_period_repeat_value = 100;
+    int32_t period_13th_single_value = 100;
+    int32_t eight_period_repeat_value = 100;
+    timer_handle_t timer1 = nullptr, timer2 = nullptr, timer3 = nullptr, timer4 = nullptr;
 
-    soft_timer_create("TwoPeriodTimer", SOFTTIMER_MODE_SINGLE, 2, &two_period_value, callback);
-    soft_timer_create("OnePeriodTimer", SOFTTIMER_MODE_SINGLE, 1, &one_period_value, callback);
-    soft_timer_destroy("TwoPeriodTimer");
-    soft_timer_tick();
-    soft_timer_poll();
-    LONGS_EQUAL(9, one_period_value);
-    LONGS_EQUAL(10, two_period_value);
+    timer4 = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 8, &eight_period_repeat_value, timer_expired_cb);
+    timer3 = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 13, &period_13th_single_value, timer_expired_cb);
+    timer2 = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 10, &ten_period_repeat_value, timer_expired_cb);
+    timer1 = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 3, &three_period_repeat_value, timer_expired_cb);
+    soft_timer_start(timer1);
+    soft_timer_start(timer2);
+    soft_timer_start(timer3);
+    soft_timer_start(timer4);
+    call_timer_ticks(1000);
+    LONGS_EQUAL(100 - (1000 / 3), three_period_repeat_value);
+    LONGS_EQUAL(100 - (1000 / 8), eight_period_repeat_value);
+    LONGS_EQUAL(100 - (1000 / 10), ten_period_repeat_value);
+    LONGS_EQUAL(100 - (1000 / 13), period_13th_single_value);
+    soft_timer_destroy(timer1);
+    soft_timer_destroy(timer2);
+    soft_timer_destroy(timer3);
+    soft_timer_destroy(timer4);
 }
 
-TEST(soft_timer, CreateTwoSoftTimerAndDestroyOnePeriodTimer)
+TEST(soft_timer, ChangePeriod)
 {
-    uint32_t one_period_value = 10;
-    uint32_t two_period_value = 10;
-
-    soft_timer_create("TwoPeriodTimer", SOFTTIMER_MODE_SINGLE, 2, &two_period_value, callback);
-    soft_timer_create("OnePeriodTimer", SOFTTIMER_MODE_SINGLE, 1, &one_period_value, callback);
-    soft_timer_destroy("OnePeriodTimer");
-    soft_timer_tick();
-    soft_timer_poll();
-    LONGS_EQUAL(10, one_period_value);
-    LONGS_EQUAL(10, two_period_value);
-    soft_timer_tick();
-    soft_timer_poll();
-    LONGS_EQUAL(10, one_period_value);
-    LONGS_EQUAL(9, two_period_value);
+    int32_t value = 100;
+    
+    timer = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 10, &value, timer_expired_cb);
+    soft_timer_start(timer);
+    soft_timer_change_period(timer, 100);
+    call_timer_ticks(100);
+    LONGS_EQUAL(99, value);
+    soft_timer_destroy(timer);
 }
 
-TEST(soft_timer, CreateTwoSameNameSoftTimer)
+TEST(soft_timer, ChangeReloadModeToOneShot)
 {
-    soft_timer_create("Timer", SOFTTIMER_MODE_SINGLE, 1, NULL, callback);
-    LONGS_EQUAL(-SOFTTIMER_ERR_EXIT, soft_timer_create("Timer", SOFTTIMER_MODE_REPEAT, 10, NULL, callback));
+    int32_t value = 100;
+
+    timer = soft_timer_create(nullptr, SFTIM_MODE_REPEAT, 10, &value, timer_expired_cb);
+    soft_timer_start(timer);
+    call_timer_ticks(100);
+    LONGS_EQUAL(90, value);
+    soft_timer_set_reload_mode(timer, SFTIM_MODE_SINGLE);
+    LONGS_EQUAL(SFTIM_MODE_SINGLE, soft_timer_get_reload_mode(timer));
+    call_timer_ticks(100);
+    LONGS_EQUAL(89, value);
 }
 
-TEST(soft_timer, DestroySoftTimerNotCreateBefore)
+TEST(soft_timer, ChangeReloadModeToAutoReaload)
 {
-    LONGS_EQUAL(-SOFTTIMER_ERR_NOT_FOUND, soft_timer_destroy("TImer"));
-}
+    int32_t value = 100;
 
-TEST(soft_timer, CreateSoftTimerNumbersOverBound)
-{
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("1", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("2", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("3", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("4", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("5", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("6", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("7", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("8", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("9", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(SOFTTIMER_ERR_OK, soft_timer_create("10", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-    LONGS_EQUAL(-SOFTTIMER_ERR_FULL, soft_timer_create("11", SOFTTIMER_MODE_SINGLE, 1, NULL, callback));
-}
-
-TEST(soft_timer, CreateMultiRepeateSoftTimer)
-{
-    uint32_t ten_period_repeat_value = 100;
-    uint32_t three_period_repeat_value = 100;
-    uint32_t period_13th_single_value = 100;
-    uint32_t eight_period_repeat_value = 100;
-
-    soft_timer_create("TenPeriodRepeatTimer", SOFTTIMER_MODE_REPEAT, 10, &ten_period_repeat_value, callback);
-    soft_timer_create("ThreePeriodRepeatTimer", SOFTTIMER_MODE_REPEAT, 3, &three_period_repeat_value, callback);
-    soft_timer_create("13thPeriodSingleTImer", SOFTTIMER_MODE_SINGLE, 13, &period_13th_single_value, callback);
-    soft_timer_create("EightPeriodRepeatTimer", SOFTTIMER_MODE_REPEAT, 8, &eight_period_repeat_value, callback);
-    call_timer_ticks(3);
-    soft_timer_poll();
-    LONGS_EQUAL(99, three_period_repeat_value);
-    LONGS_EQUAL(100, eight_period_repeat_value);
-    LONGS_EQUAL(100, ten_period_repeat_value);
-    LONGS_EQUAL(100, period_13th_single_value);
-    call_timer_ticks(3);
-    soft_timer_poll();
-    LONGS_EQUAL(98, three_period_repeat_value);
-    LONGS_EQUAL(100, eight_period_repeat_value);
-    LONGS_EQUAL(100, ten_period_repeat_value);
-    LONGS_EQUAL(100, period_13th_single_value);
-    call_timer_ticks(2);
-    soft_timer_poll();
-    LONGS_EQUAL(98, three_period_repeat_value);
-    LONGS_EQUAL(99, eight_period_repeat_value);
-    LONGS_EQUAL(100, ten_period_repeat_value);
-    LONGS_EQUAL(100, period_13th_single_value);
-    call_timer_ticks(1);
-    soft_timer_poll();
-    LONGS_EQUAL(97, three_period_repeat_value);
-    LONGS_EQUAL(99, eight_period_repeat_value);
-    LONGS_EQUAL(100, ten_period_repeat_value);
-    LONGS_EQUAL(100, period_13th_single_value);
-    call_timer_ticks(1);
-    soft_timer_poll();
-    LONGS_EQUAL(97, three_period_repeat_value);
-    LONGS_EQUAL(99, eight_period_repeat_value);
-    LONGS_EQUAL(99, ten_period_repeat_value);
-    LONGS_EQUAL(100, period_13th_single_value);
-    call_timer_ticks(2);
-    soft_timer_poll();
-    LONGS_EQUAL(96, three_period_repeat_value);
-    LONGS_EQUAL(99, eight_period_repeat_value);
-    LONGS_EQUAL(99, ten_period_repeat_value);
-    LONGS_EQUAL(100, period_13th_single_value);
-    call_timer_ticks(1);
-    soft_timer_poll();
-    LONGS_EQUAL(96, three_period_repeat_value);
-    LONGS_EQUAL(99, eight_period_repeat_value);
-    LONGS_EQUAL(99, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
-    call_timer_ticks(2);
-    soft_timer_poll();
-    LONGS_EQUAL(95, three_period_repeat_value);
-    LONGS_EQUAL(99, eight_period_repeat_value);
-    LONGS_EQUAL(99, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
-    call_timer_ticks(1);
-    soft_timer_poll();
-    LONGS_EQUAL(95, three_period_repeat_value);
-    LONGS_EQUAL(98, eight_period_repeat_value);
-    LONGS_EQUAL(99, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
-    call_timer_ticks(2);
-    soft_timer_poll();
-    LONGS_EQUAL(94, three_period_repeat_value);
-    LONGS_EQUAL(98, eight_period_repeat_value);
-    LONGS_EQUAL(99, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
-    call_timer_ticks(2);
-    soft_timer_poll();
-    LONGS_EQUAL(94, three_period_repeat_value);
-    LONGS_EQUAL(98, eight_period_repeat_value);
-    LONGS_EQUAL(98, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
-    call_timer_ticks(1);
-    soft_timer_poll();
-    LONGS_EQUAL(93, three_period_repeat_value);
-    LONGS_EQUAL(98, eight_period_repeat_value);
-    LONGS_EQUAL(98, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
-    call_timer_ticks(3);
-    soft_timer_poll();
-    LONGS_EQUAL(92, three_period_repeat_value);
-    LONGS_EQUAL(97, eight_period_repeat_value);
-    LONGS_EQUAL(98, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
-    call_timer_ticks(2);
-    soft_timer_poll();
-    LONGS_EQUAL(92, three_period_repeat_value);
-    LONGS_EQUAL(97, eight_period_repeat_value);
-    LONGS_EQUAL(98, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
-    call_timer_ticks(1);
-    soft_timer_poll();
-    LONGS_EQUAL(91, three_period_repeat_value);
-    LONGS_EQUAL(97, eight_period_repeat_value);
-    LONGS_EQUAL(98, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
-    call_timer_ticks(3);
-    soft_timer_poll();
-    LONGS_EQUAL(90, three_period_repeat_value);
-    LONGS_EQUAL(97, eight_period_repeat_value);
-    LONGS_EQUAL(97, ten_period_repeat_value);
-    LONGS_EQUAL(99, period_13th_single_value);
+    timer = soft_timer_create(nullptr, SFTIM_MODE_SINGLE, 10, &value, timer_expired_cb);
+    soft_timer_start(timer);
+    call_timer_ticks(100);
+    LONGS_EQUAL(99, value);
+    soft_timer_set_reload_mode(timer, SFTIM_MODE_REPEAT);
+    soft_timer_start(timer);
+    LONGS_EQUAL(SFTIM_MODE_REPEAT, soft_timer_get_reload_mode(timer));
+    call_timer_ticks(100);
+    LONGS_EQUAL(89, value);
 }
