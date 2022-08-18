@@ -145,6 +145,8 @@ static uint32_t _get_account_count(data_center_t center)
 
 void data_center_init(data_center_t center, const char *name)
 {
+    assert(center);
+    assert(name);
     center->name = name;
     center->ops.add_account = _add_account;
     center->ops.remove_account = _remove_account;
@@ -154,4 +156,21 @@ void data_center_init(data_center_t center, const char *name)
     center->ops.get_account_count = _get_account_count;
     INIT_LIST_HEAD(&center->account_pool);
     account_create(&center->account_main, name, center, 0, NULL);
+}
+
+void data_center_deinit(data_center_t center)
+{
+    struct account_node *p = NULL, *n = NULL;
+
+    assert(center);
+    /* delete all accounts that have been mounted to the main account */
+    list_for_each_entry_safe(p, n, struct account_node, &center->account_pool, node) {
+        account_destroy(p->account);
+        list_del(&p->node);
+        __free(p);
+    }
+    /* delete main account */
+    account_destroy(&center->account_main);
+    memset((void *)center, 0, sizeof(struct data_center));
+    INIT_LIST_HEAD(&center->account_pool);
 }

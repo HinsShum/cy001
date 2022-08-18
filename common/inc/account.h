@@ -178,7 +178,24 @@ struct account_node {
 
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
+/**
+ * @brief Initialize account structures.
+ * @param account The handle of the account that will be initialized.
+ * @param id Account's name.
+ * @param center The handle of the data center that account will be mounted to.
+ * @param buf_size Account's buffer size.
+ * @param user_data The handle of the accout's priv data.
+ * 
+ * @retval If initialize successfully then true is returned, otherwise false is returned.
+ */
 extern bool account_create(account_t account, const char *id, data_center_t center, uint32_t buf_size, void *user_data);
+
+/**
+ * @brief Deinitialize account structures.
+ * @param account The handle of the account that will be deinititialized.
+ * 
+ * @retval None
+ */
 extern void account_destroy(account_t account);
 
 #ifdef __cplusplus
