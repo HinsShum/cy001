@@ -27,6 +27,7 @@
 #include "key_processing.h"
 #include "device.h"
 #include "driver.h"
+#include "gpio.h"
 #include "options.h"
 
 /*---------- macro ----------*/
@@ -49,12 +50,12 @@
             }                                                           \
         } while(0)
 
-#define IMPORT_KEYS(name, pool)                                         \
+#define IMPORT_KEYS(name, cb, pool)                                     \
         do {                                                            \
             void *dev = resource_pool_get_device(#name);                \
             assert(dev);                                                \
             if(dev) {                                                   \
-                void *key = key_processing_create(dev);                 \
+                void *key = key_processing_create(dev, cb, NULL);       \
                 assert(key);                                            \
                 if(key) {                                               \
                     pool->add_resource(pool, #name, key);               \
@@ -80,6 +81,15 @@ static resource_manager_base_t devices_pool;
 static resource_manager_base_t keys_pool;
 
 /*---------- function ----------*/
+static bool _key_input(const void *device)
+{
+    bool retval = false;
+
+    device_ioctl((void *)device, IOCTL_GPIO_GET, &retval);
+
+    return retval;
+}
+
 static void _resource_add(void)
 {
     /* import devices */
@@ -93,10 +103,10 @@ static void _resource_add(void)
     IMPORT_DEVICE(key1, devices_pool);
     IMPORT_DEVICE(key2, devices_pool);
     /* import key process */
-    IMPORT_KEYS(keyup, keys_pool);
-    IMPORT_KEYS(key0, keys_pool);
-    IMPORT_KEYS(key1, keys_pool);
-    IMPORT_KEYS(key2, keys_pool);
+    IMPORT_KEYS(keyup, _key_input, keys_pool);
+    IMPORT_KEYS(key0, _key_input, keys_pool);
+    IMPORT_KEYS(key1, _key_input, keys_pool);
+    IMPORT_KEYS(key2, _key_input, keys_pool);
 }
 
 static void _resource_remove(void)

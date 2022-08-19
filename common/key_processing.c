@@ -23,7 +23,6 @@
 
 /*---------- includes ----------*/
 #include "key_processing.h"
-#include "gpio.h"
 #include "options.h"
 #include <string.h>
 
@@ -39,8 +38,11 @@ struct key_proc {
     uint64_t pressed_time;
     uint64_t pressing_time;
     uint32_t state;
-    const void *device;
-    void (*event_cb)(enum key_event event);
+    const void *user_data;
+    uint32_t long_pressing_time;
+    uint32_t pressing_read_period;
+    key_evt_cb_t evt_cb;
+    key_input_cb_t input_cb;
 };
 
 enum key_state {
@@ -97,7 +99,12 @@ static void _key_event_cb_default(enum key_event event)
     /* do nothing */
 }
 
-key_proc_t key_processing_create(const void *device)
+static bool _key_input_default(const void *user_data)
+{
+    return false;
+}
+
+key_proc_t key_processing_create(const void *user_data, key_input_cb_t input_cb, key_evt_cb_t evt_cb)
 {
     key_proc_t key = NULL;
 
@@ -109,11 +116,22 @@ key_proc_t key_processing_create(const void *device)
         }
         __debug_message("Key Process: alloc 0x%p for new key\n", key);
         memset(key, 0, sizeof(*key));
-        key->device = device;
         key->pressed = false;
         key->released = true;
         key->last_key_value = false;
-        key->event_cb = _key_event_cb_default;
+        key->user_data = user_data;
+        key->long_pressing_time = KEY_LONG_PRESS_TIME;
+        key->pressing_read_period = KEY_PRESSING_READ_PERIOD;
+        if(input_cb) {
+            key->input_cb = input_cb;
+        } else {
+            key->input_cb = _key_input_default;
+        }
+        if(evt_cb) {
+            key->evt_cb = evt_cb;
+        } else {
+            key->evt_cb = _key_event_cb_default;
+        }
     } while(0);
 
     return key;
@@ -126,13 +144,46 @@ void key_processing_destroy(const key_proc_t key)
     }
 }
 
-void key_processing_set_event_cb(const key_proc_t key, void (*event_cb)(enum key_event event))
+void key_processing_set_event_cb(const key_proc_t key, key_evt_cb_t evt_cb)
 {
     if(key) {
-        if(event_cb != NULL) {
-            key->event_cb = event_cb;
+        if(evt_cb != NULL) {
+            key->evt_cb = evt_cb;
         } else {
-            key->event_cb = _key_event_cb_default;
+            key->evt_cb = _key_event_cb_default;
+        }
+    }
+}
+
+void key_processing_set_input_cb(const key_proc_t key, key_input_cb_t input_cb)
+{
+    if(key) {
+        if(input_cb != NULL) {
+            key->input_cb = input_cb;
+        } else {
+            key->input_cb = _key_input_default;
+        }
+    }
+}
+
+void key_processing_set_long_pressing_time(const key_proc_t key, uint32_t long_pressing_time)
+{
+    if(key) {
+        if(long_pressing_time) {
+            key->long_pressing_time = long_pressing_time;
+        } else {
+            key->long_pressing_time = KEY_LONG_PRESS_TIME;
+        }
+    }
+}
+
+void key_processing_set_pressing_read_period(const key_proc_t key, uint32_t pressing_read_period)
+{
+    if(key) {
+        if(pressing_read_period) {
+            key->pressing_read_period = pressing_read_period;
+        } else {
+            key->pressing_read_period = KEY_PRESSING_READ_PERIOD;
         }
     }
 }
@@ -141,62 +192,55 @@ void key_processing(const key_proc_t key)
 {
     bool key_value = false;
     uint64_t cur_ticks = __get_ticks();
-    const char *name = NULL;
     bool update = false;
     uint64_t pressing_time = 0;
 
     do {
-        if(key == NULL || key->device == NULL) {
+        if(key == NULL) {
             break;
         }
-        name = ((device_t *)key->device)->dev_name;
-        /* check key value */
-        device_ioctl((device_t *)key->device, IOCTL_GPIO_GET, &key_value);
+        /* get key value */
+        key_value = key->input_cb(key->user_data);
         if(_is_key_stable(key, key_value) != true) {
             key->last_key_value = key_value;
             break;
         }
         update = true;
         if(_is_pressed(key, key_value)) {
-            __debug_info("Key Process: %s pressed now\n", name);
             /* key pressed */
             key->state |= KEY_STATE_PRESSED;
             key->pressed_time = TICKS2MS(cur_ticks);
             key->pressing_time = 0;
             /* tigger pressed event */
-            key->event_cb(KEY_EVENT_PRESSED);
+            key->evt_cb(KEY_EVENT_PRESSED);
             break;
         }
         pressing_time = TICKS2MS(cur_ticks) - key->pressed_time;
         if(_is_pressing(key, key_value)) {
-            if((pressing_time - key->pressing_time) >= KEY_PRESSING_READ_PERIOD) {
-                __debug_info("Key Process: %s pressing\n", name);
+            if((pressing_time - key->pressing_time) >= key->pressing_read_period) {
                 key->pressing_time = pressing_time;
                 key->state |= KEY_STATE_PRESSING;
                 /* tigger pressing event */
-                key->event_cb(KEY_EVENT_PRESSING);
+                key->evt_cb(KEY_EVENT_PRESSING);
             }
-            if(pressing_time >= KEY_LONG_PRESS_TIME &&
+            if(pressing_time >= key->long_pressing_time &&
                (key->state & KEY_STATE_LONG_PRESSED) == 0) {
-                __debug_info("Key Process: %s long pressed\n", name);
                 key->state |= KEY_STATE_LONG_PRESSED;
                 /* tigger long pressed event */
-                key->event_cb(KEY_EVENT_LONG_PRESSED);
+                key->evt_cb(KEY_EVENT_LONG_PRESSED);
             }
             break;
         }
         if(_is_released(key, key_value)) {
-            if(pressing_time < KEY_LONG_PRESS_TIME) {
-                __debug_info("Key Process: %s short clicked, released now\n", name);
+            if(pressing_time < key->long_pressing_time) {
                 /* tigger short clicked event */
-                key->event_cb(KEY_EVENT_SHORT_CLICKED);
+                key->evt_cb(KEY_EVENT_SHORT_CLICKED);
             } else {
-                __debug_info("Key Process: %s clicked, released now\n", name);
                 /* tigger clicked event */
-                key->event_cb(KEY_EVENT_CLICKED);
+                key->evt_cb(KEY_EVENT_CLICKED);
             }
             /* tigger released event */
-            key->event_cb(KEY_EVENT_RELEASED);
+            key->evt_cb(KEY_EVENT_RELEASED);
             key->pressed_time = 0;
             key->pressing_time = 0;
             key->state = KEY_STATE_RELEASED;

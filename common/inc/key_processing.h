@@ -46,11 +46,18 @@ enum key_event {
 
 typedef struct key_proc *key_proc_t;
 
+typedef bool (*key_input_cb_t)(const void *user_data);
+
+typedef void (*key_evt_cb_t)(enum key_event evt);
+
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-extern key_proc_t key_processing_create(const void *device);
+extern key_proc_t key_processing_create(const void *user_data, key_input_cb_t input_cb, key_evt_cb_t evt_cb);
 extern void key_processing_destroy(const key_proc_t key);
-extern void key_processing_set_event_cb(const key_proc_t key, void (*event_cb)(enum key_event event));
+extern void key_processing_set_event_cb(const key_proc_t key, key_evt_cb_t evt_cb);
+extern void key_processing_set_input_cb(const key_proc_t key, key_input_cb_t input_cb);
+extern void key_processing_set_long_pressing_time(const key_proc_t key, uint32_t long_pressing_time);
+extern void key_processing_set_pressing_read_period(const key_proc_t key, uint32_t pressing_read_period);
 extern void key_processing(const key_proc_t key);
 
 #ifdef __cplusplus
