@@ -36,6 +36,7 @@ extern "C"
 #include "misc.h"
 #include "version.h"
 #include "heap.h"
+#include "xlog.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_conf.h"
 
@@ -75,11 +76,11 @@ extern "C"
 /* print macros
  */
 #ifndef CONFIG_SILENT
-#define __debug_message(x, y...)        printf("\033[32;22m" x, ##y)
-#define __debug_info(x, y...)           printf("\033[37;22m" x, ##y)
-#define __debug_warn(x, y...)           printf("\033[31;22m" x, ##y)
-#define __debug_error(x, y...)          printf("\033[31;22m" x, ##y)
-#define __debug_cont(x, y...)           printf(x, ##y)
+#define __debug_message(x, y...)        xlog_message(x, ##y)
+#define __debug_info(x, y...)           xlog_info(x, ##y)
+#define __debug_warn(x, y...)           xlog_warn(x, ##y)
+#define __debug_error(x, y...)          xlog_error(x, ##y)
+#define __debug_cont(x, y...)           xlog_cont(x, ##y)
 #else
 #define __debug_message(x, y...)
 #define __debug_info(x, y...)

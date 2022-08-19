@@ -1,5 +1,5 @@
 /**
- * @file boards/cy001/src/fputc.c
+ * @file app/src/fputc.c
  *
  * Copyright (C) 2021
  *

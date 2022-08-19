@@ -24,6 +24,8 @@
 /*---------- includes ----------*/
 #include "plat.h"
 #include "resource_pool.h"
+#include "xlog.h"
+#include "serial.h"
 #include "errorno.h"
 
 /*---------- macro ----------*/
@@ -32,8 +34,23 @@
 /*---------- function prototype ----------*/
 /*---------- variable ----------*/
 /*---------- function ----------*/
+static void _stdout(const char *str, uint32_t length)
+{
+    static void *device = NULL;
+
+    if(!device) {
+        device = resource_pool_get_device_careful("com");
+    }
+    device_write(device, (void *)str, SERIAL_WIRTE_CHANGE_DIR_AUTOMATICALLY, length);
+}
+
 void plat_init(void)
 {
+    xlog_ops_t ops = {
+        .print = _stdout
+    };
+
+    xlog_init(&ops);
     resource_pool_init();
 }
 
