@@ -434,11 +434,6 @@
           <GroupName>src</GroupName>
           <Files>
             <File>
-              <FileName>fputc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\fputc.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\main.c</FilePath>
@@ -447,6 +442,11 @@
               <FileName>plat.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\app\src\plat.c</FilePath>
+            </File>
+            <File>
+              <FileName>fputc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\app\src\fputc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -537,6 +537,11 @@
               <FileName>key_processing.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\common\key_processing.c</FilePath>
+            </File>
+            <File>
+              <FileName>xlog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\xlog.c</FilePath>
             </File>
           </Files>
         </Group>
