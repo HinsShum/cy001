@@ -44,10 +44,43 @@ struct pingpong_buffer {
 
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
+/**
+ * @brief Ping-pong buffer initialization.
+ * @param handler: Pointer to the ping-pong buffer.
+ * @param buf0: Pointer to the first buffer.
+ * @param buf1: Pointer to the second buffer.
+ * @retval None
+ */
 extern void pingpong_buffer_init(struct pingpong_buffer *handler, void *buf0, void *buf1);
+
+/**
+ * @brief Get a readable buffer.
+ * @param handler: Pointer to the ping-pong buffer.
+ * @param pread_buf: Pointer to the pointer to the buffer to be read.
+ * @retval Returns true if there is a buffer to read.
+ */
 extern bool pingpong_buffer_get_read_buf(struct pingpong_buffer *handler, void **pread_buf);
+
+/**
+ * @brief Notify buffer read completion.
+ * @param handler: Pointer to the ping-pong buffer.
+ * @retval None
+ */
 extern void pingpong_buffer_set_read_done(struct pingpong_buffer *handler);
+
+/**
+ * @brief Get writable buffer.
+ * @param handler: Pointer to the ping-pong buffer.
+ * @param pwrite_buf: Pointer to the ponter to the buffer to be write.
+ * @retval None
+ */
 extern void pingpong_buffer_get_write_buf(struct pingpong_buffer *handler, void **pwrite_buf);
+
+/**
+ * @brief Notify buffer write completion.
+ * @param handler: Pointer to the ping-pong buffer.
+ * @retval None
+ */
 extern void pingpong_buffer_set_write_done(struct pingpong_buffer *handler);
 
 #ifdef __cplusplus

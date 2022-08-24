@@ -46,7 +46,22 @@ struct resource_manager_base {
 
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
+/**
+ * @brief Create a container for resources.
+ * 
+ * @retval If the container is successfully created then a handle to the newly created container
+ * is returned. If the container cannot be created because there is insufficient heap remaining
+ * to allocate the container structers then NULL is returned.
+ */
 extern resource_manager_base_t resource_manager_create(void);
+
+/**
+ * @brief Destroy a container that was previously created using the resource_manager_create() API
+ * function.
+ * @param base The handle of the container being destroyed.
+ * 
+ * @retval None
+ */
 extern void resource_manager_destroy(resource_manager_base_t base);
 
 #ifdef __cplusplus

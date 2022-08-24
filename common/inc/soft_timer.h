@@ -64,7 +64,7 @@ typedef void (*timer_cb_t)(timer_handle_t);
  * @param cb The function to call when the timer expires.
  * CallBack fundtions must have the prototype defined by timer_cb_t, which is "void callback(timer_handle_t timer)"
  * 
- * @retval If the timer is successfully creayed then a handle to the newly created timer is returned.
+ * @retval If the timer is successfully created then a handle to the newly created timer is returned.
  * If the timer cannot be created because there is insufficient heap remaining to allocate the timer
  * structers then NULL is returned.
  */
