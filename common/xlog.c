@@ -48,6 +48,7 @@ struct xlog_describe {
         uint32_t default_level;
         uint32_t console_level;
     } log_level;
+    bool hide_log_type;
     xlog_ops_t ops;
 };
 
@@ -266,6 +267,13 @@ static uint32_t __attribute__((format(printf, 1, 0))) _vprint(const char *fmt, v
                 }
                 printed_len += len;
             }
+            if(!_xlog.hide_log_type) {
+                /* log type */
+                emit_log_char('<');
+                emit_log_char(log_level_char[cur_log_level]);
+                emit_log_char('>');
+                printed_len += 3;
+            }
             next_text_line = false;
         }
         emit_log_char(*p);
@@ -313,6 +321,11 @@ bool xlog_set_log_level(const char *level)
     return retval;
 }
 
+void xlog_hide_log_type(bool hide)
+{
+    _xlog.hide_log_type = hide;
+}
+
 void xlog_init(xlog_ops_t *ops)
 {
     log_start = 0;
@@ -320,6 +333,7 @@ void xlog_init(xlog_ops_t *ops)
     next_text_line = true;
     _xlog.log_level.default_level = DEFAULT_MESSAGE_LOG_LEVEL;
     _xlog.log_level.console_level = DEFAULT_CONSOLE_LOG_LEVEL;
+    _xlog.hide_log_type = true;
     if(ops) {
         _xlog.ops = *ops;
     }

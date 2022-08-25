@@ -54,11 +54,11 @@ extern "C"
 #define xlog_warn(x, y...)                  xlog(LOG_WARN x, ##y)
 #define xlog_message(x, y...)               xlog(LOG_MESSAGE x, ##y)
 #define xlog_info(x, y...)                  xlog(LOG_INFO x, ##y)
-#define xlog_cont(x, y...)                  xlog(x, ##y)
-#define xlog_tag_error(tag, x, y...)        xlog(LOG_ERROR tag x, ##y)
-#define xlog_tag_warn(tag, x, y...)         xlog(LOG_WARN tag x, ##y)
-#define xlog_tag_message(tag, x, y...)      xlog(LOG_MESSAGE tag x, ##y)
-#define xlog_tag_info(tag, x, y...)         xlog(LOG_INFO tag x, ##y)
+#define xlog_cont(x, y...)                  xlog(LOG_CONT x, ##y)
+#define xlog_tag_error(tag, x, y...)        xlog(LOG_ERROR "(" tag ")" x, ##y)
+#define xlog_tag_warn(tag, x, y...)         xlog(LOG_WARN "(" tag ")" x, ##y)
+#define xlog_tag_message(tag, x, y...)      xlog(LOG_MESSAGE "(" tag ")" x, ##y)
+#define xlog_tag_info(tag, x, y...)         xlog(LOG_INFO "(" tag ")" x, ##y)
 
 /*---------- type define ----------*/
 typedef struct {
@@ -102,6 +102,15 @@ extern xlog_print_func_t xlog_set_print_func(xlog_print_func_t print);
  * returned.
  */
 extern bool xlog_set_log_level(const char *level);
+
+/**
+ * @brief Control if the log type can output. No log type is output by default.
+ * @param hide If hide is true, no log type is output, otherwise the log type
+ * is output.
+ * 
+ * @retval None
+ */
+extern void xlog_hide_log_type(bool hide);
 
 /**
  * @brief Initialize xlog.
