@@ -115,11 +115,18 @@ static inline void __console_print(uint32_t start, uint32_t end)
 
 static void emit_log_char(char c)
 {
+    uint32_t cache_len = 0;
+
     LOG_BUF(log_end) = c;
     log_end++;
     /* buf overflow, drop some str */
-    if((log_end - log_start) > __LOG_BUF_LEN) {
-        log_start = log_end - __LOG_BUF_LEN;
+    if(log_end < log_start) {
+        cache_len = UINT32_MAX - log_start + log_end + 1;
+    } else {
+        cache_len = log_end - log_start;
+    }
+    if(cache_len > __LOG_BUF_LEN) {
+        log_start++;
     }
 }
 
@@ -139,9 +146,15 @@ static void _call_console(uint32_t start, uint32_t end)
 {
     uint32_t cur_off = start, print_off = start;
     static int32_t msg_level = -1;
+    bool overflow = false;
 
+    if((int32_t)(start - end) > 0) {
+        overflow = true;
+    }
     while(cur_off != end) {
-        if((msg_level < 0) && ((end - cur_off) > 2) && 
+        if((msg_level < 0) &&
+                ((!overflow && ((end - cur_off) > 2)) ||
+                (overflow && ((UINT32_MAX - cur_off + end + 1) > 2))) &&
                 LOG_BUF(cur_off + 0) == '<' &&
                 LOG_BUF(cur_off + 1) >= '0' &&
                 LOG_BUF(cur_off + 1) <= '3' &&
