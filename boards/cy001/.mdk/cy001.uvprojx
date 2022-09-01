@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F103xE, USE_HAL_DRIVER, USE_FULL_LL_DRIVER, HSE_VALUE=8000000, CONFIG_OPTIONS_FILE=&lt;config/options.h&gt;</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\arch\stm32f10x\inc;..\bsp\inc;..\cpu\inc;..\;..\..\..\common\inc;..\..\..\driver\inc;..\..\..\inc;..\..\..\lib\st\stm32f10x\peripherals\inc;..\..\..\lib\st\stm32f10x\peripherals\inc\Legacy;..\..\..\utils\inc;..\..\..\components\heap\inc;..\..\..\app\src\inc;..\..\..\app\resource\inc;..\config\port</IncludePath>
+              <IncludePath>..\..\..\arch\stm32f10x\inc;..\bsp\inc;..\cpu\inc;..\;..\..\..\common\inc;..\..\..\driver\inc;..\..\..\inc;..\..\..\lib\st\stm32f10x\peripherals\inc;..\..\..\lib\st\stm32f10x\peripherals\inc\Legacy;..\..\..\utils\inc;..\..\..\components\heap\inc;..\..\..\app\src\inc;..\..\..\app\resource\inc;..\config\port;..\..\..\common\utils\data_center\inc;..\..\..\common\utils\key\inc;..\..\..\common\utils\pingpong_buffer\inc;..\..\..\common\utils\resource_manager\inc;..\..\..\common\utils\soft_timer\inc;..\..\..\common\utils\xlog\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -506,42 +506,42 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>common</GroupName>
+          <GroupName>common/utils</GroupName>
           <Files>
-            <File>
-              <FileName>resource_manager.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\resource_manager.c</FilePath>
-            </File>
-            <File>
-              <FileName>soft_timer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\soft_timer.c</FilePath>
-            </File>
             <File>
               <FileName>account.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\common\account.c</FilePath>
+              <FilePath>..\..\..\common\utils\data_center\account.c</FilePath>
             </File>
             <File>
               <FileName>data_center.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\common\data_center.c</FilePath>
-            </File>
-            <File>
-              <FileName>pingpong_buffer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\pingpong_buffer.c</FilePath>
+              <FilePath>..\..\..\common\utils\data_center\data_center.c</FilePath>
             </File>
             <File>
               <FileName>key_processing.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\common\key_processing.c</FilePath>
+              <FilePath>..\..\..\common\utils\key\key_processing.c</FilePath>
+            </File>
+            <File>
+              <FileName>pingpong_buffer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\utils\pingpong_buffer\pingpong_buffer.c</FilePath>
+            </File>
+            <File>
+              <FileName>resource_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\utils\resource_manager\resource_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>soft_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\utils\soft_timer\soft_timer.c</FilePath>
             </File>
             <File>
               <FileName>xlog.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\common\xlog.c</FilePath>
+              <FilePath>..\..\..\common\utils\xlog\xlog.c</FilePath>
             </File>
           </Files>
         </Group>

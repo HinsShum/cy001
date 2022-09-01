@@ -1,5 +1,5 @@
 /**
- * @file common\inc\soft_timer.h
+ * @file common/utils/soft_timer/inc/soft_timer.h
  *
  * Copyright (C) 2022
  *

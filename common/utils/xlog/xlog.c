@@ -1,5 +1,5 @@
 /**
- * @file common\xlog.c
+ * @file common/utils/xlog/xlog.c
  *
  * Copyright (C) 2022
  *
