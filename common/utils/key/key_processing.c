@@ -209,13 +209,13 @@ void key_processing(const key_proc_t key)
         if(_is_pressed(key, key_value)) {
             /* key pressed */
             key->state |= KEY_STATE_PRESSED;
-            key->pressed_time = TICKS2MS(cur_ticks);
+            key->pressed_time = __ticks2ms(cur_ticks);
             key->pressing_time = 0;
             /* tigger pressed event */
             key->evt_cb(KEY_EVENT_PRESSED);
             break;
         }
-        pressing_time = TICKS2MS(cur_ticks) - key->pressed_time;
+        pressing_time = __ticks2ms(cur_ticks) - key->pressed_time;
         if(_is_pressing(key, key_value)) {
             if((pressing_time - key->pressing_time) >= key->pressing_read_period) {
                 key->pressing_time = pressing_time;

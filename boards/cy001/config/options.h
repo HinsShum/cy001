@@ -59,8 +59,9 @@ extern "C"
 #define __delay_ms(ms)                  mdelay(ms)
 #define __delay_us(us)                  udelay(us)
 #define __get_ticks()                   tick_get()
-#define MS2TICKS(ms)                    (ms)
-#define TICKS2MS(ticks)                 (ticks)
+#define __get_ticks_from_isr()          tick_get()
+#define __ms2ticks(ms)                  (ms)
+#define __ticks2ms(ticks)               (ticks)
 
 /* system critical functions
  */
