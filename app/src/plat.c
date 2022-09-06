@@ -41,7 +41,7 @@ static void _stdout(const char *str, uint32_t length)
     if(!device) {
         device = resource_pool_get_device_careful("com");
     }
-    device_write(device, (void *)str, SERIAL_WIRTE_CHANGE_DIR_AUTOMATICALLY, length);
+    device_write(device, (void *)str, SERIAL_WRITE_CHANGE_DIR_AUTOMATICALLY, length);
 }
 
 void plat_init(void)
