@@ -72,7 +72,7 @@ static inline void _unlock(serial_transport_t self)
 }
 
 serial_transport_t serial_transport_new(serial_mac_type_t type, uint32_t baudrate, uint32_t recv_capacity,
-        uint32_t trans_capacity, transport_ops_t ops)
+        uint32_t trans_capacity, uint32_t max_blocked_count, transport_ops_t ops)
 {
     serial_transport_t self = NULL;
 
@@ -86,6 +86,7 @@ serial_transport_t serial_transport_new(serial_mac_type_t type, uint32_t baudrat
             break;
         }
         memset(self, 0, sizeof(*self));
+        self->max_blocked_count = max_blocked_count;
         INIT_LIST_HEAD(&self->head);
         self->ops.lock = ops->lock;
         self->ops.unlock = ops->unlock;

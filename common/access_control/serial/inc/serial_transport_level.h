@@ -63,6 +63,7 @@ struct serial_transport_ops {
  * @param recv_capacity Trasnport controller will create two receive buffers and one process buffer,
  * each with a size of recv_capacity bytes.
  * @param trans_capacity Transport controller will create one transport buffer with a size of trans_capacity bytes.
+ * @param max_blocked_count Max count of blocked packet number at transport level.
  * @param ops Hardware operate callback pointer. It contains serial hardware, timer hardware and event.
  * 
  * @retval If the serial transport controller is sucessfully created the a handle to the newly controller is returned.
@@ -70,7 +71,7 @@ struct serial_transport_ops {
  * structure or hardware initialize failure then NULL is returned.
  */
 extern serial_transport_t serial_transport_new(serial_mac_type_t type, uint32_t baudrate, uint32_t recv_capacity,
-        uint32_t trans_capacity, struct serial_transport_ops *ops);
+        uint32_t trans_capacity, uint32_t max_blocked_count, struct serial_transport_ops *ops);
 
 /**
  * @brief Delete a controller that was previously created using the serial_transport_new()

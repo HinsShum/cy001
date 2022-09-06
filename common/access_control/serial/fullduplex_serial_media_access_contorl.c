@@ -84,6 +84,8 @@ struct mac_ops {
 };
 
 struct mac {
+    uint32_t disf;
+    uint32_t disf_default;
     struct mac_receive *preceiver;
     struct mac_transmit transmitter;
     struct mac_process processer;
@@ -140,6 +142,21 @@ static serial_mac_expection_t _port_level_init(uint32_t baudrate, serial_mac_ops
     } while(0);
 
     return err;
+}
+
+static uint32_t _get_disf(uint32_t baudrate)
+{
+    uint32_t us = 0;
+    uint32_t disf = 0;
+
+    if(baudrate > 19200) {
+        us = 1800;
+    } else {
+        us = ((7UL * 220000UL) / (2UL * baudrate)) * 50;
+    }
+    disf = __ms2ticks((us / 1000)) + 1;
+	
+	return disf;
 }
 
 serial_mac_t fullduplex_serial_media_access_controller_new(uint32_t baudrate, uint32_t recv_capacity,
@@ -212,6 +229,9 @@ serial_mac_t fullduplex_serial_media_access_controller_new(uint32_t baudrate, ui
         self->processer.capacity = recv_capacity;
         self->processer.pos = 0;
         self->processer.preceiver = NULL;
+        /* configure other */
+        self->disf_default = _get_disf(baudrate);
+        self->disf = self->disf_default;
     } while(0);
 
     return self;
@@ -234,6 +254,7 @@ void fullduplex_serial_mac_set_transmitter(serial_mac_t self, const uint8_t *pbu
     self->transmitter.state = TRANS_BUSY;
     self->ops.serial_post(pbuf, length);
     self->transmitter.state = old_state;
+    self->disf = self->disf_default;
 }
 
 serial_mac_expection_t fullduplex_serial_mac_set_transmitter_cache(serial_mac_t self, const uint8_t *pbuf,
@@ -308,6 +329,7 @@ void fullduplex_serial_mac_timer_expired(serial_mac_t self)
     if(self->preceiver->state == RECV_BUSY) {
         self->ops.event_post(SERIAL_MAC_EVT_RECEIVED);
     }
+    self->preceiver->state = RECV_IDLE;
     self->ops.timer_ctrl(false);
     /* choose a clean buffer ready to receive new data */
     pingpong_buffer_set_write_done(&self->pingpong);
@@ -341,6 +363,7 @@ void fullduplex_serial_mac_poll(serial_mac_t self)
                 self->transmitter.state = TRANS_BUSY;
                 self->ops.serial_post(self->transmitter.pbuf, self->transmitter.pos);
                 self->transmitter.state = TRANS_WAIT_ACK;
+                self->disf = self->disf_default;
                 break;
             default:
                 break;
@@ -355,6 +378,10 @@ void fullduplex_serial_mac_called_per_tick(serial_mac_t self)
     do {
         if(self->transmitter.state == TRANS_IDLE || self->transmitter.state == TRANS_BUSY) {
             /* supend transport fsm */
+            break;
+        }
+        if(self->disf) {
+            self->disf--;
             break;
         }
         if(self->transmitter.state == TRANS_READY) {
