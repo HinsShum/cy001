@@ -155,8 +155,8 @@ static uint32_t _get_disf(uint32_t baudrate)
         us = ((7UL * 220000UL) / (2UL * baudrate)) * 50;
     }
     disf = __ms2ticks((us / 1000)) + 1;
-	
-	return disf;
+
+    return disf;
 }
 
 serial_mac_t fullduplex_serial_media_access_controller_new(uint32_t baudrate, uint32_t recv_capacity,
@@ -253,6 +253,9 @@ void fullduplex_serial_mac_set_transmitter(serial_mac_t self, const uint8_t *pbu
     assert(self->ops.serial_post);
     self->transmitter.state = TRANS_BUSY;
     self->ops.serial_post(pbuf, length);
+#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+    PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]W", pbuf, length);
+#endif
     self->transmitter.state = old_state;
     self->disf = self->disf_default;
 }
@@ -348,6 +351,10 @@ void fullduplex_serial_mac_poll(serial_mac_t self)
     if(self->ops.event_get(&evt)) {
         switch(evt) {
             case SERIAL_MAC_EVT_RECEIVED:
+#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+                PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]R", 
+                        self->processer.preceiver->pbuf, self->processer.preceiver->pos);
+#endif
                 /* copy received packet from receiver to processer */
                 memcpy(self->processer.pbuf, self->processer.preceiver->pbuf, self->processer.preceiver->pos);
                 self->processer.pos = self->processer.preceiver->pos;
@@ -362,6 +369,9 @@ void fullduplex_serial_mac_poll(serial_mac_t self)
             case SERIAL_MAC_EVT_TRANSMITTER_READY:
                 self->transmitter.state = TRANS_BUSY;
                 self->ops.serial_post(self->transmitter.pbuf, self->transmitter.pos);
+#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+                PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]W", self->transmitter.pbuf, self->transmitter.pos);
+#endif
                 self->transmitter.state = TRANS_WAIT_ACK;
                 self->disf = self->disf_default;
                 break;

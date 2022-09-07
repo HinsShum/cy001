@@ -285,6 +285,9 @@ void halfduplex_serial_mac_set_transmitter(serial_mac_t self, const uint8_t *pbu
     _mac_bus_lock(self);
     self->transmitter.state = TRANS_BUSY;
     self->ops.serial_post(pbuf, length);
+#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+    PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]W", pbuf, length);
+#endif
     self->bus.disf = DISF;
     self->transmitter.state = old_state;
     _mac_bus_unlock(self);
@@ -385,6 +388,10 @@ void halfduplex_serial_mac_poll(serial_mac_t self)
     if(self->ops.event_get(&evt)) {
         switch(evt) {
             case SERIAL_MAC_EVT_RECEIVED:
+#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+                PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]R", 
+                        self->processer.preceiver->pbuf, self->processer.preceiver->pos);
+#endif
                 /* copy received packet from receiver to processer */
                 memcpy(self->processer.pbuf, self->processer.preceiver->pbuf, self->processer.preceiver->pos);
                 self->processer.pos = self->processer.preceiver->pos;
@@ -400,6 +407,9 @@ void halfduplex_serial_mac_poll(serial_mac_t self)
                 self->bus.disf = DISF;
                 self->transmitter.state = TRANS_BUSY;
                 self->ops.serial_post(self->transmitter.pbuf, self->transmitter.pos);
+#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+                PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]W", self->transmitter.pbuf, self->transmitter.pos);
+#endif
                 self->transmitter.state = TRANS_WAI_ACK;
                 _mac_bus_unlock(self);
                 break;
