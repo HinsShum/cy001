@@ -363,15 +363,15 @@ void halfduplex_serial_mac_timer_expired(serial_mac_t self)
     assert(self);
     assert(self->ops.timer_ctrl);
     assert(self->ops.event_post);
+    /* choose a clean buffer ready to receive new data */
+    pingpong_buffer_set_write_done(&self->pingpong);
+    pingpong_buffer_get_read_buf(&self->pingpong, (void **)&self->processer.preceiver);
+    pingpong_buffer_get_write_buf(&self->pingpong, (void **)&self->preceiver);
     /* post received event if no error occured during receiving bytes */
     if(self->preceiver->state == RECV_BUSY) {
         self->ops.event_post(SERIAL_MAC_EVT_RECEIVED);
     }
     self->ops.timer_ctrl(false);
-    /* choose a clean buffer ready to receive new data */
-    pingpong_buffer_set_write_done(&self->pingpong);
-    pingpong_buffer_get_read_buf(&self->pingpong, (void **)&self->processer.preceiver);
-    pingpong_buffer_get_write_buf(&self->pingpong, (void **)&self->preceiver);
     /* recover bus */
     self->bus.disf = DISF;
     _mac_bus_unlock(self);
