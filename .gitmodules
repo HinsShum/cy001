@@ -9,3 +9,6 @@
 [submodule "svd"]
 	path = svd
 	url = git@github.com:HinsShum/svd.git
+[submodule "common"]
+	path = common
+	url = git@github.com:HinsShum/common-frame.git
