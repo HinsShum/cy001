@@ -68,7 +68,6 @@ include("boards/${BOARD_NAME}/tools/${BOARD_NAME}.cmake")
 add_subdirectory(driver)
 add_subdirectory(common)
 add_subdirectory(utils)
-add_subdirectory(components)
 add_subdirectory(app)
 
 set_property(SOURCE ${G_C_FILES} PROPERTY LANGUAGE C)

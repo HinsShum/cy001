@@ -70,9 +70,9 @@ extern "C"
 
 /* system heap functions
  */
-#define __malloc(size)                  port_malloc(size)
-#define __free(ptr)                     port_free(ptr)
-#define __heap_free_size_get()          port_get_free_heap_size()
+#define __malloc(size)                  heap_malloc(size)
+#define __free(ptr)                     heap_free(ptr)
+#define __heap_free_size_get()          heap_get_free_remaining_size()
 
 /* print macros
  */

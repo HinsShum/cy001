@@ -1,9 +1,9 @@
 /**
- * @file heap.h
+ * @file boards\cy001\config\heap_config.h
  *
- * Copyright (C) 2020
+ * Copyright (C) 2022
  *
- * heap.h is free software: you can redistribute it and/or modify
+ * heap_config.h is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -17,10 +17,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @author HinsShum hinsshum@qq.com
- * @note reference from FreeRTOS heap_4.c
+ *
+ * @encoding utf-8
  */
-#ifndef __HEAP_H
-#define __HEAP_H
+#ifndef __HEAP_CONFIG_H
+#define __HEAP_CONFIG_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /*---------- includes ----------*/
 #include <stdint.h>
@@ -28,11 +34,13 @@
 #include <stddef.h>
 
 /*---------- macro ----------*/
+#define CONFIG_HEAP_TOTAL_SIZE                      ((size_t)30 * 1024)
+
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-extern void *port_malloc(size_t wanted_size);
-extern void port_free(void *pfree);
-extern size_t port_get_free_heap_size(void);
 
-#endif /* __HEAP_H */
+#ifdef __cplusplus
+}
+#endif
+#endif /* __HEAP_CONFIG_H */

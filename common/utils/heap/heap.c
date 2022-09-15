@@ -22,13 +22,35 @@
 
 /*---------- includes ----------*/
 #include "heap.h"
-#include "portable.h"
 #include <stdlib.h>
+#ifdef CONFIG_HEAP_FILE
+#include CONFIG_HEAP_FILE
+#endif
 
 /*---------- macro ----------*/
-#ifndef PORT_TOTAL_HEAP_SIZE
-    #error "Please define the head total size before use this heap program"
+/* heap protect callback defition */
+#ifndef CONFIG_HEAP_LOCK
+#define CONFIG_HEAP_LOCK()
 #endif
+
+#ifndef CONFIG_HEAP_UNLOCK
+#define CONFIG_HEAP_UNLOCK()
+#endif
+
+/* heap port macro defition */
+#ifndef CONFIG_HEAP_BYTE_ALIGNMENT
+#define CONFIG_HEAP_BYTE_ALIGNMENT      (8)
+#endif
+
+#define HEAP_BYTE_ALIGNMENT_MASK        (CONFIG_HEAP_BYTE_ALIGNMENT - 1)
+#if (HEAP_BYTE_ALIGNMENT_MASK & CONFIG_HEAP_BYTE_ALIGNMENT) || (CONFIG_HEAP_BYTE_ALIGNMENT > 32)
+#error "CONFIG_HEAP_BYTE_ALIGNMENT must be one of the following values: 1, 2, 4, 8, 16 or 32"
+#endif
+
+#ifndef CONFIG_HEAP_TOTAL_SIZE
+#error "Please define the head total size before use this heap program"
+#endif
+
 /* Assumes 8bit bytes! */
 #define HEAP_BITS_PER_BYTE              ((size_t)8)
 /* Block sizes must not get too small. */
@@ -44,15 +66,16 @@ typedef struct a_block_link {
 
 /*---------- variable ----------*/
 /* Allocate the memory for the heap. */
-static uint8_t heap[PORT_TOTAL_HEAP_SIZE];
+static uint8_t heap[CONFIG_HEAP_TOTAL_SIZE];
 /* The size of the structure placed at the beginning of each allocated memory
  * block must by correctly byte aligned. */
-static const size_t heap_struct_size = (sizeof(block_link_t) + ((size_t)(PORT_BYTE_ALIGNMENT - 1))) & ~((size_t)PORT_BYTE_ALIGNMENT_MASK);
+static const size_t heap_struct_size = (sizeof(block_link_t) + ((size_t)(CONFIG_HEAP_BYTE_ALIGNMENT - 1))) & ~((size_t)HEAP_BYTE_ALIGNMENT_MASK);
 /* Create a couple of list links to mark the start and end of the list. */
 static block_link_t start, *pend = NULL;
 /* Keeps track of the number of calls to allocate and free memory as well as the
  * number of free bytes remaining, but says nothing about fragmentation. */
 static size_t free_bytes_remaining = 0U;
+static size_t minimum_free_bytes_remaining = 0U;
 /* Gets set to the top bit of an size_t type.  When this bit in the xBlockSize
  * member of an BlockLink_t structure is set then the block belongs to the
  * application.  When the bit is free the block is still part of the free heap
@@ -65,12 +88,12 @@ static void heap_init(void)
     block_link_t *pblock_first_free = NULL;
     uint8_t *paligned_heap = NULL;
     size_t address = 0;
-    size_t total_heap_size = PORT_TOTAL_HEAP_SIZE;
+    size_t total_heap_size = CONFIG_HEAP_TOTAL_SIZE;
 
     address = (size_t)heap;
-    if(0 != (address & PORT_BYTE_ALIGNMENT_MASK)) {
-        address += (PORT_BYTE_ALIGNMENT - 1);
-        address &= ~((size_t)PORT_BYTE_ALIGNMENT_MASK);
+    if(0 != (address & HEAP_BYTE_ALIGNMENT_MASK)) {
+        address += (CONFIG_HEAP_BYTE_ALIGNMENT - 1);
+        address &= ~((size_t)HEAP_BYTE_ALIGNMENT_MASK);
         total_heap_size -= address - (size_t)heap;
     }
     paligned_heap = (uint8_t *)address;
@@ -82,7 +105,7 @@ static void heap_init(void)
      * at the end of the heap space. */
     address = ((size_t)paligned_heap) + total_heap_size;
     address -= heap_struct_size;
-    address &= ~((size_t)PORT_BYTE_ALIGNMENT_MASK);
+    address &= ~((size_t)HEAP_BYTE_ALIGNMENT_MASK);
     pend = (void *)address;
     pend->block_size = 0;
     pend->pnext_free_block = NULL;
@@ -93,6 +116,7 @@ static void heap_init(void)
     pblock_first_free->pnext_free_block = pend;
     /* Only one block exists - and it covers the entire usable heap space. */
     free_bytes_remaining = pblock_first_free->block_size;
+    minimum_free_bytes_remaining = pblock_first_free->block_size;
     /* Work out the position of the top bit in a size_t variable. */
     block_allocate_bit = ((size_t)1) << ((sizeof(size_t) * HEAP_BITS_PER_BYTE) - 1);
 }
@@ -126,12 +150,12 @@ static void heap_insert_block_into_free_list(block_link_t *pblock_insert)
     }
 }
 
-void *port_malloc(size_t wanted_size)
+void *heap_malloc(size_t wanted_size)
 {
     block_link_t *pblock = NULL, *pblock_previous = NULL, *pblock_new = NULL;
     void *preturn = NULL;
 
-    PORT_HEAP_LOCK();
+    CONFIG_HEAP_LOCK();
     {
         if(NULL == pend) {
             heap_init();
@@ -145,8 +169,8 @@ void *port_malloc(size_t wanted_size)
                 wanted_size += heap_struct_size;
                 /* Ensure that blocks are always aligned to the required number
                  * of bytes. */
-                if(0x00 != (wanted_size & PORT_BYTE_ALIGNMENT_MASK)) {
-                    wanted_size += (PORT_BYTE_ALIGNMENT - (wanted_size & PORT_BYTE_ALIGNMENT_MASK));
+                if(0x00 != (wanted_size & HEAP_BYTE_ALIGNMENT_MASK)) {
+                    wanted_size += (CONFIG_HEAP_BYTE_ALIGNMENT - (wanted_size & HEAP_BYTE_ALIGNMENT_MASK));
                 }
             }
             if((0 < wanted_size) && (wanted_size <= free_bytes_remaining)) {
@@ -171,18 +195,21 @@ void *port_malloc(size_t wanted_size)
                         heap_insert_block_into_free_list(pblock_new);
                     }
                     free_bytes_remaining -= pblock->block_size;
+                    if(minimum_free_bytes_remaining > free_bytes_remaining) {
+                        minimum_free_bytes_remaining = free_bytes_remaining;
+                    }
                     pblock->block_size |= block_allocate_bit;
                     pblock->pnext_free_block = NULL;
                 }
             }
         }
     }
-    PORT_HEAP_UNLOCK();
+    CONFIG_HEAP_UNLOCK();
 
     return preturn;
 }
 
-void port_free(void *pfree)
+void heap_free(void *pfree)
 {
     uint8_t *p = (uint8_t *)pfree;
     block_link_t *plink = NULL;
@@ -195,19 +222,24 @@ void port_free(void *pfree)
                 /* The block is being returned to the heap - it is no longer
                  * allocated. */
                 plink->block_size &= ~block_allocate_bit;
-                PORT_HEAP_LOCK();
+                CONFIG_HEAP_LOCK();
                 {
                     /* Add this block to the list of free blocks. */
                     free_bytes_remaining += plink->block_size;
                     heap_insert_block_into_free_list(plink);
                 }
-                PORT_HEAP_UNLOCK();
+                CONFIG_HEAP_UNLOCK();
             }
         }
     }
 }
 
-size_t port_get_free_heap_size(void)
+size_t heap_get_free_remaining_size(void)
 {
     return free_bytes_remaining;
+}
+
+size_t heap_get_minimum_free_remaining_size(void)
+{
+    return minimum_free_bytes_remaining;
 }

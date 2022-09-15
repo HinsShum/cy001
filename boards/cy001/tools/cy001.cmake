@@ -9,10 +9,9 @@ cmake_minimum_required(VERSION 3.1)
 set(G_INC_VPATH ${G_INC_VPATH} ${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME})
 
 add_definitions(-DCONFIG_OPTIONS_FILE="config/options.h")
+add_definitions(-DCONFIG_HEAP_FILE="config/heap_config.h")
 
-include(${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}/config/components.cmake)
-include(${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}/config/driver.cmake)
-include(${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}/config/stlib.cmake)
+include(${PROJECT_SOURCE_DIR}/boards/${BOARD_NAME}/config/cfg.cmake)
 
 add_subdirectory(arch/stm32f10x)
 add_subdirectory(boards/${BOARD_NAME}/cpu)
