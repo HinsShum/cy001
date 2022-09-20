@@ -1,9 +1,9 @@
 /**
- * @file config\list.h
+ * @file config\lists.h
  *
  * Copyright (C) 2021
  *
- * list.h is free software: you can redistribute it and/or modify
+ * lists.h is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -28,8 +28,8 @@
  * generate better code by using them directly rather than
  * using the generic single-entry routines.
  */
-#ifndef __LIST_HEAD_H
-#define __LIST_HEAD_H
+#ifndef __LISTS_HEAD_H
+#define __LISTS_HEAD_H
 
 #ifdef __cplusplus
 extern "C"
@@ -601,4 +601,4 @@ static inline void list_splice_tail_init(struct list_head *list, struct list_hea
 #ifdef __cplusplus
 }
 #endif
-#endif /* __LIST_HEAD_H */
+#endif /* __LISTS_HEAD_H */
