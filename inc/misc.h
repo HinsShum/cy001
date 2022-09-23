@@ -64,7 +64,7 @@ extern "C"
 #else
 #define assert(expr)                  	do { \
                                             if(!(expr)) { \
-                                                __debug_error("Assert in %s:%d\n", __FILE__, __LINE__); \
+                                                xlog_error("Assert in %s:%d\n", __FILE__, __LINE__); \
                                                 for(;;); \
                                             } \
                                         } while(0)
@@ -79,11 +79,11 @@ extern "C"
 
 #define PRINT_BUFFER_CONTENT(color, tag, buf, length)   \
         do {                                            \
-            __debug_cont("%s%s: ", color, tag);         \
+            xlog_cont("%s%s: ", color, tag);            \
             for(uint32_t i = 0; i < length; ++i) {      \
-                __debug_cont("%02X ", buf[i]);          \
+                xlog_cont("%02X ", buf[i]);             \
             }                                           \
-            __debug_cont("\b\n");                       \
+            xlog_cont("\b\n");                          \
         } while(0);
 
 /*---------- type define ----------*/

@@ -42,7 +42,7 @@ extern "C"
 
 /*---------- macro ----------*/
 #ifdef NDEBUG
-#define CONFIG_SILENT
+#define CONFIG_SILENCE
 #endif
 
 /* system variables defined
@@ -74,20 +74,31 @@ extern "C"
 #define __free(ptr)                     heap_free(ptr)
 #define __heap_free_size_get()          heap_get_free_remaining_size()
 
-/* print macros
+/* log interface
  */
-#ifndef CONFIG_SILENT
-#define __debug_message(x, y...)        xlog_message(x, ##y)
-#define __debug_info(x, y...)           xlog_info(x, ##y)
-#define __debug_warn(x, y...)           xlog_warn(x, ##y)
-#define __debug_error(x, y...)          xlog_error(x, ##y)
-#define __debug_cont(x, y...)           xlog_cont(x, ##y)
+#if 0
+#ifndef CONFIG_SILENCE
+#include <stdio.h>
+#define xlog_error(x, y...)             printf(COLOR_RED x, ##y)
+#define xlog_warn(x, y...)              printf(COLOR_YELLOW x, ##y)
+#define xlog_message(x, y...)           printf(COLOR_GREEN x, ##y)
+#define xlog_info(x, y...)              printf(COLOR_WHITE x, ##y)
+#define xlog_cont(x, y...)              printf(x, ##y)
+#define xlog_tag_error(tag, x, y...)    printf("(" tag ")" x, ##y)
+#define xlog_tag_warn(tag, x, y...)     printf("(" tag ")" x, ##y)
+#define xlog_tag_message(tag, x, y...)  printf("(" tag ")" x, ##y)
+#define xlog_tag_info(tag, x, y...)     printf("(" tag ")" x, ##y)
 #else
-#define __debug_message(x, y...)
-#define __debug_info(x, y...)
-#define __debug_warn(x, y...)
-#define __debug_error(x, y...)
-#define __debug_cont(x, y...)
+#define xlog_error(x, y...)
+#define xlog_warn(x, y...)
+#define xlog_message(x, y...)
+#define xlog_info(x, y...)
+#define xlog_cont(x, y...)
+#define xlog_tag_error(tag, x, y...)
+#define xlog_tag_warn(tag, x, y...)
+#define xlog_tag_message(tag, x, y...)
+#define xlog_tag_info(tag, x, y...)
+#endif
 #endif
 
 /* embed flash information

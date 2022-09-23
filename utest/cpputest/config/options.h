@@ -36,12 +36,8 @@ extern "C"
 #include "misc.h"
 
 /*---------- macro ----------*/
-#undef assert
 #ifdef NDEBUG
-#define assert(expr)                    ((void)0U)
-#define CONFIG_SILENT
-#else
-#define assert(expr)                    do { if(!(expr)) { for(;;); }} while(0)
+#define CONFIG_SILENCE
 #endif
 
 /* system delay function
@@ -64,18 +60,27 @@ extern "C"
 
 /* print macros
  */
-#ifndef CONFIG_SILENT
-#define __debug_message(x, y...)        printf("\033[32;22m" x, ##y)
-#define __debug_info(x, y...)           printf("\033[37;22m" x, ##y)
-#define __debug_warn(x, y...)           printf("\033[31;22m" x, ##y)
-#define __debug_error(x, y...)          printf("\033[31;22m" x, ##y)
-#define __debug_cont(x, y...)           printf(x, ##y)
+#ifndef CONFIG_SILENCE
+#include <stdio.h>
+#define xlog_error(x, y...)             printf(COLOR_RED x, ##y)
+#define xlog_warn(x, y...)              printf(COLOR_YELLOW x, ##y)
+#define xlog_message(x, y...)           printf(COLOR_GREEN x, ##y)
+#define xlog_info(x, y...)              printf(COLOR_WHITE x, ##y)
+#define xlog_cont(x, y...)              printf(x, ##y)
+#define xlog_tag_error(tag, x, y...)    printf("(" tag ")" x, ##y)
+#define xlog_tag_warn(tag, x, y...)     printf("(" tag ")" x, ##y)
+#define xlog_tag_message(tag, x, y...)  printf("(" tag ")" x, ##y)
+#define xlog_tag_info(tag, x, y...)     printf("(" tag ")" x, ##y)
 #else
-#define __debug_message(x, y...)
-#define __debug_info(x, y...)
-#define __debug_warn(x, y...)
-#define __debug_error(x, y...)
-#define __debug_cont(x, y...)
+#define xlog_error(x, y...)
+#define xlog_warn(x, y...)
+#define xlog_message(x, y...)
+#define xlog_info(x, y...)
+#define xlog_cont(x, y...)
+#define xlog_tag_error(tag, x, y...)
+#define xlog_tag_warn(tag, x, y...)
+#define xlog_tag_message(tag, x, y...)
+#define xlog_tag_info(tag, x, y...)
 #endif
 
 /*---------- type define ----------*/
